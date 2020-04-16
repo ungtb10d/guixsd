@@ -406,14 +406,14 @@ dynamic loading, and an object system.")
 (define gobject-introspection
   (package
     (name "gobject-introspection")
-    (version "1.62.0")
+    (version "1.64.1")
     (source (origin
              (method url-fetch)
              (uri (string-append "mirror://gnome/sources/"
                    "gobject-introspection/" (version-major+minor version)
                    "/gobject-introspection-" version ".tar.xz"))
              (sha256
-              (base32 "18lhglg9v6y83lhqzyifc1z0wrlawzrhzzxx0a3h1g7xaz97xvmi"))
+              (base32 "19vz7vp10h0zj3f491yk72dp89bix6rgkzxg4qcm4d6151ksxgl0"))
              (patches (search-patches
                        "gobject-introspection-cc.patch"
                        "gobject-introspection-girepository.patch"
