@@ -165,7 +165,7 @@ shared NFS home directories.")
 (define glib
   (package
    (name "glib")
-   (version "2.62.6")
+   (version "2.64.2")
    (source (origin
             (method url-fetch)
             (uri (string-append "mirror://gnome/sources/"
@@ -173,7 +173,7 @@ shared NFS home directories.")
                                 name "-" version ".tar.xz"))
             (sha256
              (base32
-              "174bsmbmcvaw69ff9g60q5sx0fn23rkhqcwqz17h5s7sprps4kqh"))
+              "0xr2gzl91jy6iqvp2sfjjgjyvg3w5cjs04yyk4rk1f8kiznj2bws"))
             (patches (search-patches "glib-tests-timer.patch"))
             (modules '((guix build utils)))
             (snippet
@@ -211,14 +211,14 @@ shared NFS home directories.")
                  (string-append "command_line = g_strdup_printf (\""
                                 dbus "/bin/dbus-launch")))
               #t)))
-        (add-after 'unpack 'patch-gio-launch-desktop
-          (lambda* (#:key outputs #:allow-other-keys)
-            (let ((out (assoc-ref outputs "out")))
-              ;; See also <https://gitlab.gnome.org/GNOME/glib/issues/1633>
-              ;; for another future fix.
+        (add-after 'unpack 'patch-/bin/sh
+          (lambda* (#:key inputs #:allow-other-keys)
+            (let ((bash (assoc-ref inputs "bash")))
+              ;; This prevents the "/appinfo/launch-context-signals" test from
+              ;; failing.
               (substitute* "gio/gdesktopappinfo.c"
-               (("gio-launch-desktop")
-                (string-append out "/libexec/gio-launch-desktop")))
+                (("\"/bin/sh\"")
+                 (string-append "\"" bash "/bin/sh\"")))
               #t)))
         (add-before 'build 'pre-build
           (lambda* (#:key inputs outputs #:allow-other-keys)
@@ -263,6 +263,11 @@ shared NFS home directories.")
                       (;; fails if compiler optimizations are enabled, which they
                        ;; are by default.
                        "/timer/stop"))
+
+                     ("glib/tests/unix.c"
+                      (;; This assumes user "root" exists in the chroot's
+                       ;; /etc/passwd, but it does not.
+                       "/glib-unix/get-passwd-entry/root"))
 
                      ("gio/tests/gapplication.c"
                       (;; XXX: proven to be unreliable.  See:
@@ -311,6 +316,11 @@ shared NFS home directories.")
 
                      )))
               (for-each (lambda (x) (apply disable x)) failing-tests)
+              ;; Tests fail due to "undeclared symbols" and "unused
+              ;; documentation entries".
+              (substitute* '("docs/reference/glib/meson.build"
+                             "docs/reference/gio/meson.build")
+                (("check: true") "check: false"))
               #t)))
         (replace 'check
           (lambda _
@@ -328,13 +338,6 @@ shared NFS home directories.")
               (mkdir-p bin)
               (rename-file (string-append out "/bin")
                            (string-append bin "/bin"))
-              ;; This one is an implementation detail of glib.
-              ;; It is wrong that that's in "/bin" in the first place,
-              ;; but that's what upstream is doing right now.
-              ;; See <https://gitlab.gnome.org/GNOME/glib/issues/1633>.
-              (mkdir (string-append out "/libexec"))
-              (rename-file (string-append bin "/bin/gio-launch-desktop")
-                           (string-append out "/libexec/gio-launch-desktop"))
               ;; Do not refer to "bindir", which points to "${prefix}/bin".
               ;; We don't patch "bindir" to point to "$bin/bin", because that
               ;; would create a reference cycle between the "out" and "bin"
