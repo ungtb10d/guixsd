@@ -480,7 +480,7 @@ highlighting and other features typical of a source code editor.")
 (define-public gtksourceview-3
  (package (inherit gtksourceview)
    (name "gtksourceview")
-   (version "3.24.10")
+   (version "3.24.11")
    (source (origin
              (method url-fetch)
              (uri (string-append "mirror://gnome/sources/" name "/"
@@ -488,7 +488,8 @@ highlighting and other features typical of a source code editor.")
                                  name "-" version ".tar.xz"))
              (sha256
               (base32
-               "16ym7jwiki4s1pilwr4incx0yg7ll94f1cajrnpndkxxs36hcm5b"))))))
+               "1zbpj283b5ycz767hqz5kdq02wzsga65pp4fykvhg8xj6x50f6v9"))))
+   (build-system gnu-build-system)))
 
 (define-public gdk-pixbuf
   (package
