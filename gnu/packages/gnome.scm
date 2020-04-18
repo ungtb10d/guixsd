@@ -6196,17 +6196,16 @@ Exchange, Last.fm, IMAP/SMTP, Jabber, SIP and Kerberos.")
 (define-public evolution-data-server
   (package
     (name "evolution-data-server")
-    (version "3.34.2")
+    (version "3.36.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/" name "/"
                                   (version-major+minor version) "/"
                                   name "-" version ".tar.xz"))
-              (patches (search-patches "evolution-data-server-locales.patch"
-                                       "evolution-data-server-libical-compat.patch"))
+              (patches (search-patches "evolution-data-server-locales.patch"))
               (sha256
                (base32
-                "16z85y6hhazcrp5ngw47w4x9r0j8zrj7awv5im58hhp0xs19zf1y"))))
+                "15k7k225jfv5a45hmjk94xq90np2r9f5v8yj0xi3166vvlp2n4hk"))))
     (build-system cmake-build-system)
     (arguments
      '(#:configure-flags
@@ -6228,11 +6227,10 @@ Exchange, Last.fm, IMAP/SMTP, Jabber, SIP and Kerberos.")
        (modify-phases %standard-phases
          (add-after 'unpack 'disable-failing-tests
            (lambda _
-             ;; tests/book-migration/test-migration.c:160:test_fetch_contacts:
-             ;; assertion failed (g_slist_length (contacts) == 20): (0 == 20)
-             (delete-file-recursively "tests/book-migration")
-             (substitute* "tests/CMakeLists.txt"
-               (("add_subdirectory\\(book-migration\\)") ""))
+             ;; (test-book-client-custom-summary:7593): GLib-GIO-WARNING **:
+             ;; 21:48:37.554: Weak notify timeout, object ref_count=4
+             (substitute* "tests/libebook/client/CMakeLists.txt"
+               (("test-book-client-custom-summary") ""))
              #t))
          (add-after 'unpack 'patch-paths
           (lambda _
