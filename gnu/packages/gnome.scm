@@ -4502,7 +4502,7 @@ without stepping on each others toes.")
 (define-public clutter
   (package
     (name "clutter")
-    (version "1.26.2")
+    (version "1.26.4")
     (source
      (origin
        (method url-fetch)
@@ -4511,7 +4511,7 @@ without stepping on each others toes.")
                            name "-" version ".tar.xz"))
        (sha256
         (base32
-         "0mif1qnrpkgxi43h7pimim6w6zwywa16ixcliw0yjm9hk0a368z7"))))
+         "1rn4cd1an6a9dfda884aqpcwcgq8dgydpqvb19nmagw4b70zlj4b"))))
     ;; NOTE: mutter exports a bundled fork of clutter, so when making changes
     ;; to clutter, corresponding changes may be appropriate in mutter as well.
     (build-system gnu-build-system)
@@ -4521,6 +4521,7 @@ without stepping on each others toes.")
      `(("glib:bin" ,glib "bin")     ; for glib-genmarshal
        ("gobject-introspection" ,gobject-introspection)
        ("pkg-config" ,pkg-config)
+       ("xorg-server" ,xorg-server-for-tests)
        ("xsltproc" ,libxslt)))
     (propagated-inputs
      `(("cogl" ,cogl)
@@ -4543,10 +4544,23 @@ without stepping on each others toes.")
                                (string-append "--with-html-dir="
                                               (assoc-ref %outputs "doc")
                                               "/share/doc"))
-       ;; XXX FIXME: Get test suite working.  It would probably fail in the
-       ;; same way the cogl tests fail, since clutter is based on cogl.
-       #:tests? #f))
-    (home-page "http://www.clutter-project.org")
+       #:phases
+       (modify-phases %standard-phases
+         (add-after 'unpack 'disable-failing-test
+           (lambda _
+             ;; According to tests/conform/meson.build, this test is known to
+             ;; fail.
+             (substitute* "tests/conform/Makefile.in"
+               (("actor-shader-effect\\$\\(EXEEXT\\)") ""))
+             #t))
+         (add-before 'check 'start-xorg-server
+           (lambda* (#:key inputs #:allow-other-keys)
+             ;; The test suite requires a running X server.
+             (system (format #f "~a/bin/Xvfb :1 &"
+                             (assoc-ref inputs "xorg-server")))
+             (setenv "DISPLAY" ":1")
+             #t)))))
+    (home-page "https://blogs.gnome.org/clutter/")
     (synopsis "OpenGL-based interactive canvas library")
     (description
      "Clutter is an OpenGL-based interactive canvas library, designed for
