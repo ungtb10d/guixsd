@@ -1779,7 +1779,7 @@ GNOME and KDE desktops to the icon names proposed in the specification.")
 (define-public adwaita-icon-theme
   (package (inherit gnome-icon-theme)
     (name "adwaita-icon-theme")
-    (version "3.34.3")
+    (version "3.36.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/" name "/"
@@ -1787,7 +1787,7 @@ GNOME and KDE desktops to the icon names proposed in the specification.")
                                   name "-" version ".tar.xz"))
               (sha256
                (base32
-                "025rj1fskw1y448hiar4a9icyzpyr242nlh9xhsmyp8jb71dihp7"))))
+                "0kgiq712lfidd81yzx0yk7qwlj3q8cymp6npnxyzsk844y353674"))))
     (native-inputs
      `(("gtk-encode-symbolic-svg" ,gtk+ "bin")))))
 
