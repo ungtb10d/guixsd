@@ -4630,7 +4630,7 @@ OpenGL-based interactive canvas library.")
 (define-public libchamplain
   (package
     (name "libchamplain")
-    (version "0.12.16")
+    (version "0.12.20")
     (source (origin
               (method url-fetch)
               (uri (string-append
@@ -4638,9 +4638,9 @@ OpenGL-based interactive canvas library.")
                     version ".tar.xz"))
               (sha256
                (base32
-                "13chvc2n074i0jw5jlb8i7cysda4yqx58ca6y3mrlrl9g37k2zja"))))
-    (build-system gnu-build-system)
-    (arguments '(#:configure-flags '("--enable-vala")))
+                "0rihpb0npqpihqcdz4w03rq6xl7jdckfqskvv9diq2hkrnzv8ch2"))))
+    (build-system meson-build-system)
+    (arguments '(#:configure-flags '("-Dvapi=true")))
     (native-inputs
      `(("gobject-introspection" ,gobject-introspection)
        ("pkg-config" ,pkg-config)
@@ -4654,7 +4654,7 @@ OpenGL-based interactive canvas library.")
        ("cairo" ,cairo)
        ("gtk+3" ,gtk+)
        ("glib" ,glib)))
-    (home-page "https://projects.gnome.org/libchamplain/")
+    (home-page "https://wiki.gnome.org/Projects/libchamplain")
     (synopsis "C library providing a ClutterActor to display maps")
     (description
      "libchamplain is a C library providing a ClutterActor to display maps.
