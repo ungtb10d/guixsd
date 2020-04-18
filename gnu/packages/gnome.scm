@@ -3183,7 +3183,7 @@ passwords in the GNOME keyring.")
 (define-public vala
   (package
     (name "vala")
-    (version "0.46.5")
+    (version "0.48.5")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/" name "/"
@@ -3191,7 +3191,7 @@ passwords in the GNOME keyring.")
                                   name "-" version ".tar.xz"))
               (sha256
                (base32
-                "07fv895sp9wq74b20qig7hic0r4ynrr5pfaqba02r44xb794fy0s"))))
+                "0my77s21p95q2909i7cicy6bvmkjmx4g9lh54ab68k6xvbhc1m53"))))
     (build-system gnu-build-system)
     (arguments
      '(#:phases
@@ -3216,7 +3216,7 @@ passwords in the GNOME keyring.")
      `(("graphviz" ,graphviz)))
     (propagated-inputs
      `(("glib" ,glib))) ; required by libvala-0.40.pc
-    (home-page "https://live.gnome.org/Vala/")
+    (home-page "https://wiki.gnome.org/Projects/Vala/")
     (synopsis "Compiler for the GObject type system")
     (description
      "Vala is a programming language that aims to bring modern programming
