@@ -1435,7 +1435,7 @@ the font would look under various sizes.")
 (define-public gcr
   (package
     (name "gcr")
-    (version "3.34.0")
+    (version "3.36.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/" name "/"
@@ -1443,8 +1443,8 @@ the font would look under various sizes.")
                                   name "-" version ".tar.xz"))
               (sha256
                (base32
-                "0925snsixzkwh49xiayqmj6fcrmklqk8kyy0jkv7m64h9abm1pr9"))))
-    (build-system gnu-build-system)
+                "00b6bzpr8rj8mvj66r2273r417wg2y21m6n88mhkq9m22z8bxyda"))))
+    (build-system meson-build-system)
     (arguments
      '(#:phases
        (modify-phases %standard-phases
@@ -1452,9 +1452,14 @@ the font would look under various sizes.")
          ;; build environment.
          (add-after 'unpack 'disable-failing-tests
            (lambda _
-             (substitute* "Makefile.in"
-               (("[[:blank:]]+test-system-prompt\\$\\(EXEEXT\\)")
-                ""))
+             (substitute* "gcr/meson.build"
+               (("'system-prompt',") ""))
+             #t))
+         (add-after 'unpack 'skip-gtk-update-icon-cache
+           ;; Don't create 'icon-theme.cache'.
+           (lambda _
+             (substitute* "meson_post_install.py"
+               (("gtk-update-icon-cache") "true"))
              #t))
          (add-before 'check 'pre-check
            (lambda _
@@ -1471,6 +1476,7 @@ the font would look under various sizes.")
        ("gettext" ,gettext-minimal)
        ("glib" ,glib "bin")
        ("gobject-introspection" ,gobject-introspection)
+       ("gtk-doc" ,gtk-doc)
        ("libxml2" ,libxml2)
        ("vala" ,vala)
        ("xsltproc" ,libxslt)))
