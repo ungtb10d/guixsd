@@ -4435,7 +4435,7 @@ throughout GNOME for API documentation).")
 (define-public cogl
   (package
     (name "cogl")
-    (version "1.22.4")
+    (version "1.22.6")
     (source
      (origin
        (method url-fetch)
@@ -4443,14 +4443,14 @@ throughout GNOME for API documentation).")
                            (version-major+minor version) "/"
                            "cogl-" version ".tar.xz"))
        (sha256
-        (base32 "1q0drs82a8f6glg1v29bb6g2nf15fw0rvdx3d0rgcgfarfaby5sj"))))
+        (base32 "0x8v4n61q89qy27v824bqswpz6bmn801403w2q3pa1lcwk9ln4vd"))))
     ;; NOTE: mutter exports a bundled fork of cogl, so when making changes to
     ;; cogl, corresponding changes may be appropriate in mutter as well.
     (build-system gnu-build-system)
     (native-inputs
      `(("glib:bin" ,glib "bin")     ; for glib-mkenums
        ("gobject-introspection" ,gobject-introspection)
-       ;;("xorg-server" ,xorg-server) ; for the test suite
+       ("xorg-server" ,xorg-server-for-tests) ; for the test suite
        ("pkg-config" ,pkg-config)))
     (propagated-inputs
      `(("glib" ,glib)
@@ -4478,12 +4478,7 @@ throughout GNOME for API documentation).")
                                (string-append "--with-gl-libname="
                                               (assoc-ref %build-inputs "mesa")
                                               "/lib/libGL.so"))
-       ;; XXX FIXME: All tests fail, with many warnings printed like this:
-       ;;   _FontTransOpen: Unable to Parse address
-       ;;   ${prefix}/share/fonts/X11/misc/
-       #:tests? #f
-       #; #:phases
-       #;
+       #:phases
        (modify-phases %standard-phases
          (add-before 'check 'start-xorg-server
                      (lambda* (#:key inputs #:allow-other-keys)
