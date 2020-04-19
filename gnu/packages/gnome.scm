@@ -6035,7 +6035,7 @@ to display dialog boxes from the commandline and shell scripts.")
 (define-public mutter
   (package
     (name "mutter")
-    (version "3.34.2")
+    (version "3.36.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/" name "/"
@@ -6043,7 +6043,7 @@ to display dialog boxes from the commandline and shell scripts.")
                                   name "-" version ".tar.xz"))
               (sha256
                (base32
-                "0b8bz5kvs7rlwvqsg87cf6jhrrj95vgd1l235mjx8rip35ipfvrd"))))
+                "09fqs9805d07c60a2ibskqffsb5wn72l8grwzb9fic5sl574b0im"))))
     ;; NOTE: Since version 3.21.x, mutter now bundles and exports forked
     ;; versions of cogl and clutter.  As a result, many of the inputs,
     ;; propagated-inputs, and configure flags used in cogl and clutter are
@@ -6060,7 +6060,7 @@ to display dialog boxes from the commandline and shell scripts.")
              ;; Otherwise, the RUNPATH will lack the final path component.
              (string-append "-Dc_link_args=-Wl,-rpath="
                             (assoc-ref %outputs "out") "/lib:"
-                            (assoc-ref %outputs "out") "/lib/mutter-5")
+                            (assoc-ref %outputs "out") "/lib/mutter-6")
 
              ;; The following flags are needed for the bundled clutter
              (string-append "-Dxwayland_path="
@@ -6108,6 +6108,7 @@ to display dialog boxes from the commandline and shell scripts.")
      `(("elogind" ,elogind)
        ("gnome-desktop" ,gnome-desktop)
        ("gnome-settings-daemon" ,gnome-settings-daemon)
+       ("graphene" ,graphene)
        ("libcanberra-gtk" ,libcanberra)
        ("libgudev" ,libgudev)
        ("libice" ,libice)
