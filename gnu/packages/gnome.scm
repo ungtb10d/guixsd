@@ -1043,7 +1043,7 @@ formats like PNG, SVG, PDF and EPS.")
 (define-public libgdata
   (package
     (name "libgdata")
-    (version "0.17.9")
+    (version "0.17.12")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/" name "/"
@@ -1051,24 +1051,17 @@ formats like PNG, SVG, PDF and EPS.")
                                   name "-" version ".tar.xz"))
               (sha256
                (base32
-                "0fj54yqxdapdppisqm1xcyrpgcichdmipq0a0spzz6009ikzgi45"))))
-    (build-system gnu-build-system)
-    (arguments
-     '(#:phases
-       (modify-phases %standard-phases
-         (add-before 'check 'disable-failing-tests
-           (lambda _
-             ;; The PicasaWeb API tests fail with gnome-online-accounts@3.24.2.
-             ;; They have been removed in libgdata 0.17.6, so just do the same.
-             (substitute* "gdata/tests/Makefile"
-               (("picasaweb\\$\\(EXEEXT\\) ") ""))
-             #t)))))
+                "0613nihsvwvdnmlbjnwi8zqxgmpwyxdapzznq4cy1fp84246zzd0"))))
+    (build-system meson-build-system)
     (native-inputs
      `(("glib:bin" ,glib "bin")
+       ("gobject-introspection" ,gobject-introspection) ; for g-ir-scanner
        ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
+       ("gtk-doc" ,gtk-doc)
        ("intltool" ,intltool)
        ("pkg-config" ,pkg-config)
-       ("uhttpmock" ,uhttpmock)))
+       ("uhttpmock" ,uhttpmock)
+       ("vala" ,vala)))
     (inputs
      `(("cyrus-sasl" ,cyrus-sasl)
        ("glib-networking" ,glib-networking)))
