@@ -7491,7 +7491,7 @@ shared object databases, search tools and indexing.")
 (define-public nautilus
   (package
     (name "nautilus")
-    (version "3.34.2")
+    (version "3.36.1.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/" name "/"
@@ -7499,7 +7499,7 @@ shared object databases, search tools and indexing.")
                                   name "-" version ".tar.xz"))
               (sha256
                (base32
-                "19zqwq4qyyncc5wq3xls0f7rsavnw741k336p2h7kx35p4kf41mv"))))
+                "1pkvxyfm2fl06fpyq2jr147hhpc91y4rgdlxlilg7n8ih982y9gr"))))
     (build-system meson-build-system)
     (arguments
      '(#:glib-or-gtk? #t
