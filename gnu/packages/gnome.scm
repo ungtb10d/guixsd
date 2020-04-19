@@ -9391,7 +9391,7 @@ generic enough to work for everyone.")
 (define-public evolution
   (package
     (name "evolution")
-    (version "3.34.2")
+    (version "3.36.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/evolution/"
@@ -9399,7 +9399,7 @@ generic enough to work for everyone.")
                                   "evolution-" version ".tar.xz"))
               (sha256
                (base32
-                "164vy8h432pjglafn8y2ms4gsvk3kbgc63h5qp0mk5dv4smsp29c"))))
+                "1f3cwc05gw75yqficcxns95r96lv7an4aih6d7hng3n3pqfwyfl7"))))
     (build-system cmake-build-system)
     (arguments
      `(#:imported-modules (,@%cmake-build-system-modules
@@ -9415,7 +9415,7 @@ generic enough to work for everyone.")
        (modify-phases %standard-phases
          ;; The build system attempts to install user interface modules to the
          ;; output directory of the "evolution-data-server" package.  This
-         ;; change redirects that change.
+         ;; change redirects that installation.
          (add-after 'unpack 'patch-ui-module-dir
            (lambda* (#:key outputs #:allow-other-keys)
              (substitute* "src/modules/alarm-notify/CMakeLists.txt"
