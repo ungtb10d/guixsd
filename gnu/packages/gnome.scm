@@ -5158,14 +5158,14 @@ side panel;
 (define-public libgudev
   (package
     (name "libgudev")
-    (version "232")
+    (version "233")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/" name "/"
                                   version "/" name "-" version ".tar.xz"))
               (sha256
                (base32
-                "0q3qki451zzgdjazlgshsfzbbm0in40lyx7dyrag7kbkqnwv4k7f"))))
+                "00xvva04lgqamhnf277lg32phjn971wgpc9cxvgf5x13xdq4jz2q"))))
     (build-system gnu-build-system)
     (arguments
      '(#:configure-flags
