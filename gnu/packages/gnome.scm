@@ -3140,7 +3140,7 @@ engineering.")
 (define-public seahorse
   (package
     (name "seahorse")
-    (version "3.34")
+    (version "3.36")
     (source
      (origin
        (method url-fetch)
@@ -3149,7 +3149,7 @@ engineering.")
                            version ".tar.xz"))
        (sha256
         (base32
-         "16sfnqrdlr5xx6kixx2ln1mva7nngjlw1k3f5n454vyaigffjh2v"))))
+         "1nqn4a6dr4l1fpzj3mv4swhpnvhjcqlwsyhwm59sdzqgdfx4hbwr"))))
     (build-system meson-build-system)
     (arguments
      '(#:glib-or-gtk? #t
@@ -3175,6 +3175,7 @@ engineering.")
     (native-inputs
      `(("gettext" ,gettext-minimal)
        ("glib:bin" ,glib "bin")
+       ("gobject-introspection" ,gobject-introspection) ; for g-ir-scanner
        ("itstool" ,itstool)
        ("pkg-config" ,pkg-config)
        ("vala" ,vala)
