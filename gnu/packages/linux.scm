@@ -43,6 +43,7 @@
 ;;; Copyright © 2020 Chris Marusich <cmmarusich@gmail.com>
 ;;; Copyright © 2020 Vincent Legoll <vincent.legoll@gmail.com>
 ;;; Copyright © 2020 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
+;;; Copyright © 2020 Kei Kebreau <kkebreau@posteo.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -2597,6 +2598,67 @@ part of this problem by allowing users to run file system implementations as
 user-space processes.")
     (license (list license:lgpl2.1                ;library
                    license:gpl2+))))              ;command-line utilities
+
+(define-public fuse3
+  (package (inherit fuse)
+    (name "fuse3")
+    (version "3.9.1")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://github.com/libfuse/libfuse/releases/"
+                                  "download/fuse-" version
+                                  "/fuse-" version ".tar.xz"))
+              (sha256
+               (base32
+                "0ig6kgw8bplgi24fkkfnk90bhvhhm4r2b0pb1dxmp8vbqvbczbqv"))))
+    (build-system meson-build-system)
+    (native-inputs
+     `(("python-pytest" ,python-pytest)
+       ("which" ,which)))
+    (arguments
+     `(#:tests? #f            ; all tests are skipped in the build environment
+       ,@(substitute-keyword-arguments (package-arguments fuse)
+           ((#:configure-flags _)
+            ``(,(string-append "-Dudevrulesdir="
+                               (assoc-ref %outputs "out")
+                               "/lib/udev/rules.d")
+               ;; Don't set owner and setuid bits on installed files
+               "-Duseroot=false"))
+           ((#:phases phases)
+            ;; The old 'set-file-names phase does not work for fuse3, and should
+            ;; be placed directly after the 'unpack phase to work with the
+            ;; meson-build-system.
+            `(modify-phases (alist-delete 'set-file-names ,phases)
+               (add-after 'unpack 'pre-configure
+                 (lambda* (#:key inputs outputs #:allow-other-keys)
+                   ;; libfuse calls out to mount(8) and umount(8).  Make sure
+                   ;; it refers to the right ones.
+                   (substitute* "lib/mount_util.c"
+                     (("/bin/(u?)mount" _ maybe-u)
+                      (string-append (assoc-ref inputs "util-linux")
+                                     "/bin/" maybe-u "mount")))
+                   (substitute* "util/mount.fuse.c"
+                     (("/bin/sh") (which "sh")))
+                   (substitute* "test/util.py"
+                     (("'which'") (string-append "'" (which "which") "'")))
+                   (substitute* "util/install_helper.sh"
+                     (("\\$\\{DESTDIR\\}/etc/init.d")
+                      (string-append (assoc-ref outputs "out") "/etc/init.d")))
+
+                   ;; This hack leads libfuse to search for 'fusermount' in
+                   ;; $PATH, where it may find a setuid-root binary, instead of
+                   ;; trying solely $out/sbin/fusermount and failing because
+                   ;; it's not setuid.
+                   (substitute* "lib/meson.build"
+                     (("-DFUSERMOUNT_DIR=[[:graph:]]+")
+                      "-DFUSERMOUNT_DIR=\"/var/empty\"'"))
+                   (setenv "MOUNT_FUSE_PATH"
+                           (string-append (assoc-ref outputs "out") "/sbin"))
+
+                   #t))
+               (replace 'check
+                 (lambda _
+                   (invoke "python3" "-m" "pytest" "test/"))))))))))
 
 (define-public unionfs-fuse
   (package
