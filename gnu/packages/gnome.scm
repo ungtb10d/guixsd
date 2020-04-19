@@ -662,7 +662,7 @@ tour of all gnome components and allows the user to set them up.")
 (define-public gnome-user-share
   (package
    (name "gnome-user-share")
-   (version "3.33.1")
+   (version "3.34.0")
    (source (origin
             (method url-fetch)
             (uri (string-append "mirror://gnome/sources/" name "/"
@@ -670,14 +670,15 @@ tour of all gnome components and allows the user to set them up.")
                                 name "-" version ".tar.xz"))
             (sha256
              (base32
-              "0lf790pyamdyj7180ils8vizjl8brxcg7jsm1iavfp9ay4wa8mz7"))))
+              "04r9ck9v4i0d31grbli1d4slw2d6dcsfkpaybkwbzi7wnj72l30x"))))
    (build-system meson-build-system)
    (arguments
     `(#:glib-or-gtk? #t
       #:configure-flags
-       `("-Dsystemd=false"
-         ;; Enable nautilus extension for file sharing.
-         "-Dnautilus_extension=true")))
+      `(,(string-append "-Dsystemduserunitdir="
+                        %output "/lib/systemd/user")
+        ;; Enable nautilus extension for file sharing.
+        "-Dnautilus_extension=true")))
    (native-inputs
     `(("gettext" ,gettext-minimal)
       ("glib:bin" ,glib "bin")
