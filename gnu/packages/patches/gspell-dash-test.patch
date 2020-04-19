@@ -3,8 +3,9 @@ this a valid spelling.  Skip it.
 
 TODO: Migrate to using hunspell. According to upstream, this bug won't be fixed.
 See https://bugzilla.gnome.org/show_bug.cgi?id=772406.
---- a/testsuite/test-checker.c	2017-03-24 09:50:50.000000000 -0400
-+++ b/testsuite/test-checker.c	2017-06-15 21:47:07.116173895 -0400
+diff -ur a/testsuite/test-checker.c b/testsuite/test-checker.c
+--- a/testsuite/test-checker.c	2019-11-04 00:34:21.000000000 -0500
++++ b/testsuite/test-checker.c	2020-04-18 20:04:33.328968726 -0400
 @@ -105,10 +105,11 @@
  	 * be considered deprecated, it is better to use hunspell, so WONTFIX.
  	 * For more details, see:
@@ -12,11 +13,11 @@ See https://bugzilla.gnome.org/show_bug.cgi?id=772406.
 +	 *
 +	 * correctly_spelled = gspell_checker_check_word (checker, "spell-checking", -1, &error);
 +	 * g_assert_no_error (error);
-+	 * g_assert (correctly_spelled);
++	 * g_assert_true (correctly_spelled);
  	 */
 -	correctly_spelled = gspell_checker_check_word (checker, "spell-checking", -1, &error);
 -	g_assert_no_error (error);
--	g_assert (correctly_spelled);
+-	g_assert_true (correctly_spelled);
  
  	correctly_spelled = gspell_checker_check_word (checker, "nrst-auie", -1, &error);
  	g_assert_no_error (error);
