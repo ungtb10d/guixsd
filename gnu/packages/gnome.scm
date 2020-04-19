@@ -5199,7 +5199,7 @@ part of udev-extras, then udev, then systemd.  It's now a project on its own.")
 (define-public gvfs
   (package
     (name "gvfs")
-    (version "1.40.1")
+    (version "1.44.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/gvfs/"
@@ -5207,7 +5207,7 @@ part of udev-extras, then udev, then systemd.  It's now a project on its own.")
                                   "gvfs-" version ".tar.xz"))
               (sha256
                (base32
-                "1cfnzamr4mvgpf6yhm28lh9cafy9z6842s8jpbqnfizfxybg8ylj"))))
+                "0ipv0jgzim6glsgizmfjkx0m3gd1l9lr242m0jj6cdmhs52k5vsh"))))
     (build-system meson-build-system)
     (arguments
      '(#:glib-or-gtk? #t
@@ -5229,10 +5229,11 @@ part of udev-extras, then udev, then systemd.  It's now a project on its own.")
        ("docbook-xsl" ,docbook-xsl)
        ("dbus" ,dbus)
        ("elogind" ,elogind)
-       ("fuse" ,fuse)
+       ("fuse" ,fuse3)
        ("gcr" ,gcr)
        ("glib" ,glib)
        ("gnome-online-accounts" ,gnome-online-accounts)
+       ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
        ("libarchive" ,libarchive)
        ("libbluray" ,libbluray)
        ("libcap" ,libcap)
@@ -5251,7 +5252,7 @@ part of udev-extras, then udev, then systemd.  It's now a project on its own.")
        ("openssh" ,openssh)
        ("polkit" ,polkit)
        ("udisks" ,udisks)))
-    (home-page "https://wiki.gnome.org/gvfs/")
+    (home-page "https://wiki.gnome.org/action/show/Projects/gvfs")
     (synopsis "Userspace virtual file system for GIO")
     (description
      "GVFS is a userspace virtual file system designed to work with the I/O
