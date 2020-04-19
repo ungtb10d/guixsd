@@ -129,6 +129,7 @@
   #:use-module (gnu packages rsync)
   #:use-module (gnu packages selinux)
   #:use-module (gnu packages swig)
+  #:use-module (gnu packages vulkan)
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system go)
@@ -6904,31 +6905,47 @@ types and interfaces and translates so that the X server can use them.")
 (define-public pipewire
   (package
     (name "pipewire")
-    (version "0.2.7")
+    (version "0.3.2")
     (source (origin
               (method git-fetch)
               (uri (git-reference
-                    (url "https://github.com/PipeWire/pipewire")
+                    (url "https://gitlab.freedesktop.org/pipewire/pipewire")
                     (commit version)))
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "1q5wrqnhhs6r49p8yvkw1pl0cnsd4rndxy4h5lvdydwgf1civcwc"))))
+                "1aqhaaranv1jlc5py87mzfansxhzzpawqrfs8i08qc5ggnz6mfak"))))
     (build-system meson-build-system)
     (arguments
-     '(#:configure-flags '("-Dsystemd=false")))
+     ;; TODO: enable manpage generation when xmltoman is packaged
+     ;; TODO: figure out why building with audioconvert enabled fails
+     '(#:configure-flags `("-Daudioconvert=false"
+                           "-Dman=false"
+                           "-Dsystemd=false"
+                           ;; Ensure the RUNPATH contains all installed library
+                           ;; locations.
+                           ,(string-append "-Dc_link_args=-Wl,-rpath="
+                                           (assoc-ref %outputs "out")
+                                           "/lib:"
+                                           (assoc-ref %outputs "out")
+                                           "/lib/pipewire-0.3"))))
     (native-inputs
      `(("pkg-config" ,pkg-config)))
     (inputs
      `(("alsa-lib" ,alsa-lib)
+       ("bluez" ,bluez)
        ("dbus" ,dbus)
        ("eudev" ,eudev)
        ("ffmpeg" ,ffmpeg)
        ("gstreamer" ,gstreamer)
        ("gst-plugins-base" ,gst-plugins-base)
+       ("jack" ,jack-2)
        ("libva" ,libva)
+       ("pulseaudio" ,pulseaudio)
        ("sbc" ,sbc)
-       ("sdl2" ,sdl2)))
+       ("sdl2" ,sdl2)
+       ("vulkan-headers" ,vulkan-headers)
+       ("vulkan-loader" ,vulkan-loader)))
     (home-page "https://pipewire.org/")
     (synopsis "Server and user space API to deal with multimedia pipelines")
     (description
