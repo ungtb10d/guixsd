@@ -7292,7 +7292,7 @@ like switching to windows and launching applications.")
 (define-public gtk-vnc
   (package
     (name "gtk-vnc")
-    (version "0.9.0")
+    (version "1.0.0")
     (source
      (origin
        (method url-fetch)
@@ -7301,10 +7301,8 @@ like switching to windows and launching applications.")
                            name "-" version ".tar.xz"))
        (sha256
         (base32
-         "1dya1wc9vis8h0fv625pii1n70cckf1xjg1m2hndz989d118i6is"))))
-    (build-system gnu-build-system)
-    (arguments
-     '(#:configure-flags '("--with-gtk=3.0")))
+         "1060ws037v556rx1qhfrcg02859rscksrzr8fq11himdg4d1y6m8"))))
+    (build-system meson-build-system)
     (propagated-inputs
      `(("gtk+" ,gtk+))) ; required by gtk-vnc-2.0.pc.
     (inputs
