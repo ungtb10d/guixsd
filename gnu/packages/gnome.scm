@@ -7660,7 +7660,7 @@ beautifying border effects.")
 (define-public dconf-editor
   (package
     (name "dconf-editor")
-    (version "3.34.2")
+    (version "3.36.0")
     (source
      (origin
        (method url-fetch)
@@ -7669,7 +7669,7 @@ beautifying border effects.")
                            name "-" version ".tar.xz"))
        (sha256
         (base32
-         "0pwxjada2vaf69ihpjgp9nky54iykvxq63lp1vl8pxjanif2mk6f"))))
+         "14q678bwgmhzmi7565xhhw51y8b0pv3cqh0f411qwzwif1bd1vkj"))))
     (build-system meson-build-system)
     (native-inputs
      `(("glib:bin" ,glib "bin") ; for glib-compile-schemas, gio-2.0.
