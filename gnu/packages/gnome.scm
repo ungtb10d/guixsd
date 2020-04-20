@@ -4225,7 +4225,7 @@ services for numerous locations.")
 (define-public gnome-settings-daemon
   (package
     (name "gnome-settings-daemon")
-    (version "3.34.1")
+    (version "3.36.0")
     (source
      (origin
        (method url-fetch)
@@ -4234,7 +4234,7 @@ services for numerous locations.")
                            name "-" version ".tar.xz"))
        (sha256
         (base32
-         "07y1gbicz0pbxmdgwrdzyc4byy30wfwpbqgvnx27gnpqmc5s50cr"))))
+         "0jddz8f2j4ps7csgq9b694h9hjxsyhlimik6rb2f8nbcxhrg0bzs"))))
     (build-system meson-build-system)
     (arguments
      `(#:glib-or-gtk? #t
