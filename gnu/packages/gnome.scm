@@ -6345,7 +6345,7 @@ users.")
 (define-public network-manager
   (package
     (name "network-manager")
-    (version "1.18.4")
+    (version "1.22.10")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/NetworkManager/"
@@ -6354,7 +6354,7 @@ users.")
               (patches (search-patches "nm-plugin-path.patch"))
               (sha256
                (base32
-                "0pnh1wr2p1fqa5pr945fr3lngfc5ccfrmgddqsg55lxnjpv0ggd3"))
+                "0xyaizyp3yz6x3pladw3nvl3hf4n5g140zx9jnxfp9qvag0wqa9b"))
               (modules '((guix build utils)))
               (snippet
                '(begin
@@ -6365,7 +6365,9 @@ users.")
     (outputs '("out"
                "doc")) ; 8 MiB of gtk-doc HTML
     (arguments
-     '(#:configure-flags
+     '(;; FIXME: Adding vala seems to make parallel tests fail.
+       #:parallel-tests? #f
+       #:configure-flags
        (let ((out      (assoc-ref %outputs "out"))
              (doc      (assoc-ref %outputs "doc"))
              (dhclient (string-append (assoc-ref %build-inputs "isc-dhcp")
@@ -6395,23 +6397,6 @@ users.")
                (("`ls -")
                 (string-append "`" (which "ls") " -")))
              #t))
-         (add-before 'configure 'pre-configure
-           (lambda _
-             ;; These tests try to test aspects of network-manager's
-             ;; functionality within restricted containers, but they don't
-             ;; cope with being already in the Guix build jail as that jail
-             ;; lacks some features that they would like to proxy over (like
-             ;; a /sys mount).
-             (substitute* '("Makefile.in")
-               (("src/platform/tests/test-address-linux") " ")
-               (("src/platform/tests/test-cleanup-linux") " ")
-               (("src/platform/tests/test-link-linux") " ")
-               (("src/platform/tests/test-route-linux") " ")
-               (("src/devices/tests/test-acd") "")
-               (("src/devices/tests/test-arping") " ")
-               (("src/devices/tests/test-lldp") " ")
-               (("src/tests/test-route-manager-linux") " "))
-             #t))
          (add-after 'unpack 'delete-failing-tests
            (lambda _
              ;; FIXME: These three tests fail for unknown reasons.
@@ -6424,7 +6409,20 @@ users.")
              (substitute* "Makefile.in"
                (("libnm-core/tests/test-general") " ")
                (("libnm-core/tests/test-keyfile") " ")
-               (("libnm-core/tests/test-setting\\$\\(EXEEXT\\)") " "))
+               (("libnm-core/tests/test-setting\\$\\(EXEEXT\\)") " ")
+               ;; These tests try to test aspects of network-manager's
+               ;; functionality within restricted containers, but they don't
+               ;; cope with being already in the Guix build jail as that jail
+               ;; lacks some features that they would like to proxy over (like
+               ;; a /sys mount).
+               (("src/platform/tests/test-address-linux") " ")
+               (("src/platform/tests/test-cleanup-linux") " ")
+               (("src/platform/tests/test-link-linux") " ")
+               (("src/platform/tests/test-route-linux") " ")
+               (("src/devices/tests/test-acd") "")
+               (("src/devices/tests/test-arping") " ")
+               (("src/devices/tests/test-lldp") " ")
+               (("src/tests/test-route-manager-linux") " "))
              #t))
          (add-before 'check 'pre-check
            (lambda _
@@ -6453,6 +6451,7 @@ users.")
        ("intltool" ,intltool)
        ("libxslt" ,libxslt)
        ("libxml2" ,libxml2)
+       ("vala" ,vala)
        ("pkg-config" ,pkg-config)
        ;; For testing.
        ("python" ,python-wrapper)
@@ -6482,7 +6481,7 @@ users.")
        ("util-linux" ,util-linux)
        ("elogind" ,elogind)))
     (synopsis "Network connection manager")
-    (home-page "https://www.gnome.org/projects/NetworkManager/")
+    (home-page "https://wiki.gnome.org/Projects/NetworkManager")
     (description
      "NetworkManager is a system network service that manages your network
 devices and connections, attempting to keep active network connectivity when
