@@ -597,7 +597,7 @@ extraction, and lookup for applications on the desktop.")
 (define-public gnome-initial-setup
   (package
    (name "gnome-initial-setup")
-   (version "3.32.1")
+   (version "3.36.1")
    (source (origin
             (method url-fetch)
            (uri (string-append "mirror://gnome/sources/gnome-initial-setup/"
@@ -605,7 +605,7 @@ extraction, and lookup for applications on the desktop.")
                                 "/gnome-initial-setup-" version ".tar.xz"))
             (sha256
              (base32
-              "1gwhp7dalyc8zsb2pa66cmpdrj2d6drbq5p331sq6zp8ds10k9ry"))))
+              "1sfn6bdz8snc2qmi3nzb07vlkdhy9s1ipwxxj0v2i36a7n0gv6ci"))))
    (build-system meson-build-system)
    (arguments
     '(#:configure-flags '(;; Enable camera support for user selfie.
@@ -642,9 +642,9 @@ extraction, and lookup for applications on the desktop.")
       ("json-glib" ,json-glib)
       ("krb5" ,mit-krb5)
       ("libgweather" ,libgweather)
+      ("libnma" ,libnma)
       ("libsecret" ,libsecret)
       ("network-manager" ,network-manager)
-      ("network-manager-applet" ,network-manager-applet)
       ("packagekit" ,packagekit)
       ("polkit" ,polkit)
       ("pwquality" ,libpwquality)
