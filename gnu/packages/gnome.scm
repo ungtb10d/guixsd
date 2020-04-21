@@ -7787,7 +7787,7 @@ associations for GNOME.")
 (define-public gnome-weather
   (package
    (name "gnome-weather")
-   (version "3.34.0")
+   (version "3.36.1")
    (source (origin
             (method url-fetch)
             (uri (string-append "mirror://gnome/sources/" name "/"
@@ -7795,7 +7795,7 @@ associations for GNOME.")
                                 name "-" version ".tar.xz"))
             (sha256
              (base32
-              "1g63xzs17i36if923b36k9fwbk0nqa5vz6zh1k6q2axrzhhpx1i4"))))
+              "11z75ky6xp9hx7lm24xng7ydr20bzh4d6p9sbi9c8ccz2m3fdrk8"))))
    (build-system meson-build-system)
    (native-inputs
     `(("gettext" ,gettext-minimal)
