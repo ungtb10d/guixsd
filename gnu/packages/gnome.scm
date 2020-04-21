@@ -1346,7 +1346,7 @@ and keep up to date translations of documentation.")
 (define-public gnome-disk-utility
   (package
     (name "gnome-disk-utility")
-    (version "3.34.0")
+    (version "3.36.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/" name "/"
@@ -1354,7 +1354,7 @@ and keep up to date translations of documentation.")
                                   name "-" version ".tar.xz"))
               (sha256
                (base32
-                "1mb7q90lnlp97dhxhnadhjagcfd12dfqzp0vj9h6b1r61pzhy97y"))))
+                "055l29z99f4ybgf2plz3biz1bwhlpsjpr0zk3aa6vg5w67r1h6vr"))))
     (build-system meson-build-system)
     (arguments
      '(#:configure-flags '("-Dlogind=libelogind")
@@ -1386,7 +1386,7 @@ and keep up to date translations of documentation.")
        ("libpwquality" ,libpwquality)
        ("libsecret" ,libsecret)
        ("udisks" ,udisks)))
-    (home-page "https://git.gnome.org/browse/gnome-disk-utility")
+    (home-page "https://wiki.gnome.org/Apps/Disks")
     (synopsis "Disk management utility for GNOME")
     (description "Disk management utility for GNOME.")
     (license license:gpl2+)))
