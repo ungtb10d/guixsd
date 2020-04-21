@@ -1993,7 +1993,7 @@ some form of information without getting in the user's way.")
 (define-public libpeas
   (package
     (name "libpeas")
-    (version "1.24.1")
+    (version "1.26.0")
     (source
      (origin
       (method url-fetch)
@@ -2002,7 +2002,7 @@ some form of information without getting in the user's way.")
                           name "-" version ".tar.xz"))
       (sha256
        (base32
-        "1162dr7smmfb02czmhshr0f93hqj7w0nw29bys5lzfvwarxcyflw"))))
+        "0xkk9zhkw8f2fm7g9nb4ry4xxig5n27s7rjmx6l7jr2941zdfxm9"))))
     (build-system meson-build-system)
     (arguments
      '(#:phases
@@ -2029,7 +2029,7 @@ some form of information without getting in the user's way.")
     (propagated-inputs
      ;; The .pc file "Requires" gobject-introspection.
      `(("gobject-introspection" ,gobject-introspection)))
-    (home-page "https://wiki.gnome.org/Libpeas")
+    (home-page "https://wiki.gnome.org/Projects/Libpeas")
     (synopsis "GObject plugin system")
     (description
      "Libpeas is a gobject-based plugin engine, targeted at giving every
