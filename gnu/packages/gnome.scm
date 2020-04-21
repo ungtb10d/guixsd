@@ -5857,7 +5857,7 @@ configuration program to choose applications starting on login.")
 (define-public gjs
   (package
     (name "gjs")
-    (version "1.58.3")
+    (version "1.64.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/" name "/"
@@ -5865,13 +5865,19 @@ configuration program to choose applications starting on login.")
                                   name "-" version ".tar.xz"))
               (sha256
                (base32
-                "1bkksx362007zs8c31ydygb29spwa5g5kch1ad2grc2sp53wv7ya"))))
-    (build-system gnu-build-system)
+                "0z4qx4s3174b1w5b0slnn6jwpy2c18s4fvx4xii2kflr7s4q7bsm"))))
+    (build-system meson-build-system)
     (arguments
      '(#:phases
        (modify-phases %standard-phases
-         (add-before
-          'check 'pre-check
+         (add-after 'unpack 'disable-failing-test
+           (lambda _
+             ;; This test because it's unable to access /var/lib/dbus/machine-id
+             ;; and /etc/machine-id.
+             (substitute* "installed-tests/js/meson.build"
+               (("'Gio',") ""))
+             #t))
+         (add-before 'check 'pre-check
           (lambda _
             ;; The test suite requires a running X server.
             (system "Xvfb :1 &")
@@ -5880,14 +5886,7 @@ configuration program to choose applications starting on login.")
             ;; For the missing /etc/machine-id.
             (setenv "DBUS_FATAL_WARNINGS" "0")
 
-            ;; Our mozjs-38 package does not compile the required Intl API
-            ;; support for these failing tests.
-            (substitute* "installed-tests/js/testLocale.js"
-              ((".*toBeDefined.*") "")
-              ((".*expect\\(datestr\\).*") ""))
-            (substitute* "installed-tests/scripts/testCommandLine.sh"
-              (("Valentín") "")
-              (("☭") ""))
+            (setenv "HOME" (getcwd))
             #t)))))
     (native-inputs
      `(("glib:bin" ,glib "bin")       ; for glib-compile-resources
@@ -5902,7 +5901,7 @@ configuration program to choose applications starting on login.")
      ;; These are all in the Requires.private field of gjs-1.0.pc.
      `(("cairo" ,cairo)
        ("gobject-introspection" ,gobject-introspection)
-       ("mozjs" ,mozjs-60)))
+       ("mozjs" ,mozjs-68)))
     (inputs
      `(("gtk+" ,gtk+)
        ("readline" ,readline)))
