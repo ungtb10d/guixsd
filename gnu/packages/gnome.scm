@@ -5757,7 +5757,7 @@ share them with others via social networking and more.")
 (define-public file-roller
   (package
     (name "file-roller")
-    (version "3.32.3")
+    (version "3.36.2")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/file-roller/"
@@ -5765,22 +5765,40 @@ share them with others via social networking and more.")
                                   "file-roller-" version ".tar.xz"))
               (sha256
                (base32
-                "0ap2hxvjljh4p6wsd9ikh2my3vsxp9r2nvjxxj3v87nwfyw1y4dy"))))
+                "1lkb0m8ys13sy3b6c1kj3cqrqf5d1dqvhbp8spz8v9yjv3d7z3r6"))))
     (build-system meson-build-system)
+    (arguments
+     '(#:phases
+       (modify-phases %standard-phases
+         (add-after 'unpack 'skip-gtk-update-icon-cache
+           ;; Don't create 'icon-theme.cache'.
+           (lambda _
+             (substitute* "postinstall.py"
+               (("gtk-update-icon-cache") "true"))
+             #t))
+         (add-after 'unpack 'patch-nautilus-install-path
+           ;; Install to file-roller's output since nautilus is read-only in
+           ;; the store.
+           (lambda* (#:key outputs #:allow-other-keys)
+             (substitute* "nautilus/meson.build"
+               (("install_dir : libnautilus.*")
+                (string-append "install_dir : '"
+                               (assoc-ref outputs "out")
+                               "/lib/nautilus/extensions-3.0'")))
+             #t)))))
     (native-inputs
      `(("desktop-file-utils" ,desktop-file-utils) ; for update-desktop-database
        ("intltool" ,intltool)
        ("itstool" ,itstool)
        ("pkg-config" ,pkg-config)
-       ("gtk+" ,gtk+ "bin") ; gtk-update-icon-cache
        ("glib:bin" ,glib "bin")))
-    ;; TODO: Add libnautilus.
     (inputs
      `(("gtk+" ,gtk+)
        ("gdk-pixbuf" ,gdk-pixbuf)
        ("json-glib" ,json-glib)
        ("libarchive" ,libarchive)
        ("libnotify" ,libnotify)
+       ("nautilus" ,nautilus)
        ("nettle" ,nettle)
        ("libxml2" ,libxml2)))
     (synopsis "Graphical archive manager for GNOME")
