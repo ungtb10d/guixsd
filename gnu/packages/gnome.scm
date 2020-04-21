@@ -5940,7 +5940,7 @@ javascript engine and the GObject introspection framework.")
 (define-public gedit
   (package
     (name "gedit")
-    (version "3.34.1")
+    (version "3.36.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/" name "/"
@@ -5948,7 +5948,7 @@ javascript engine and the GObject introspection framework.")
                                   name "-" version ".tar.xz"))
               (sha256
                (base32
-                "1inm50sdfw63by1lf4f1swb59mpyxlly0g5rdg99j5l3357fzygb"))))
+                "11z3lhc5i3z0gqw0qmprsm4rmvhbbm4gz6wy0f73c73x4bd8xhvd"))))
     (build-system meson-build-system)
     (arguments
      `(#:glib-or-gtk? #t
@@ -6021,6 +6021,7 @@ javascript engine and the GObject introspection framework.")
        ("python" ,python)
        ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
        ("libx11" ,libx11)
+       ("tepl" ,tepl)
        ("vala" ,vala)
        ("adwaita-icon-theme" ,adwaita-icon-theme)
        ("libsoup" ,libsoup)
