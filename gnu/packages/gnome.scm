@@ -9962,7 +9962,7 @@ integrate seamlessly with the GNOME desktop.")
 (define-public gnome-boxes
   (package
     (name "gnome-boxes")
-    (version "3.35.91")
+    (version "3.36.3")
     (source
      (origin
        (method url-fetch)
@@ -9971,17 +9971,24 @@ integrate seamlessly with the GNOME desktop.")
                            "gnome-boxes-" version ".tar.xz"))
        (sha256
         (base32
-         "0l96spz6pc8q4l5p9a58cc0kgvdr7pbc89hy6ixn72k5pl3s7fxj"))))
+         "18imxv1859gr53z4yay02611p5f1rd2pwnbaq093gmn77l0j9292"))))
     (build-system meson-build-system)
     (arguments
      '(#:glib-or-gtk? #t
        #:configure-flags (list "-Drdp=false"
                                (string-append "-Dc_link_args=-Wl,-rpath="
                                               (assoc-ref %outputs "out")
-                                              "/lib/gnome-boxes"))))
+                                              "/lib/gnome-boxes"))
+       #:phases
+       (modify-phases %standard-phases
+         (add-after 'unpack 'skip-gtk-update-icon-cache
+           ;; Don't create 'icon-theme.cache'.
+           (lambda _
+             (substitute* "build-aux/post_install.py"
+               (("gtk-update-icon-cache") "true"))
+             #t)))))
     (native-inputs
      `(("glib:bin" ,glib "bin")             ; for glib-compile-resources
-       ("gtk+:bin" ,gtk+ "bin")             ; for gtk-update-icon-cache
        ("desktop-file-utils" ,desktop-file-utils) ; for update-desktop-database
        ("itstool" ,itstool)
        ("intltool" ,intltool)
