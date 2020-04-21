@@ -3867,7 +3867,7 @@ floating in an ocean using only your brain and a little bit of luck.")
 (define-public gnome-sudoku
   (package
     (name "gnome-sudoku")
-    (version "3.34.1")
+    (version "3.36.0")
     (source
      (origin
        (method url-fetch)
@@ -3876,7 +3876,7 @@ floating in an ocean using only your brain and a little bit of luck.")
                            name "-" version ".tar.xz"))
        (sha256
         (base32
-         "025y85r4qqardivvwiwhbmgarziykdy224m8zlrq8b79zv82793b"))))
+         "17a1r2jk5yygrxil1dycmamxyvyi64mr29mbyfgcx5hm2fylxxwm"))))
     (build-system meson-build-system)
     (arguments
      '(#:glib-or-gtk? #t
