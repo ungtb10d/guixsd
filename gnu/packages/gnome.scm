@@ -946,7 +946,7 @@ either on a local, or remote machine via a number of methods.")
 (define-public gnome-user-docs
   (package
    (name "gnome-user-docs")
-   (version "3.32.3")
+   (version "3.36.1")
    (source
     (origin
       (method url-fetch)
@@ -954,7 +954,7 @@ either on a local, or remote machine via a number of methods.")
                           (version-major+minor version)
                           "/gnome-user-docs-" version ".tar.xz"))
       (sha256
-       (base32 "0dvsl0ldg8rf7yq0r4dv1pn41s7gjgcqp7agkbflkbmhrl6vbhig"))))
+       (base32 "0vnwya5g7fg0jhdrg9drxnx83lhk8qa2nvcrmd1sdfanlz4qfhjf"))))
    (build-system gnu-build-system)
    (native-inputs
     `(("gettext" ,gettext-minimal)
