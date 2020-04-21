@@ -3230,7 +3230,7 @@ libraries written in C.")
 (define-public vte
   (package
     (name "vte")
-    (version "0.58.3")
+    (version "0.60.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/vte/"
@@ -3238,8 +3238,10 @@ libraries written in C.")
                                   "vte-" version ".tar.xz"))
               (sha256
                (base32
-                "0xa9ipwic4jnhhbzlnqbhssz10xkzv61cpkl1ammc6mdq95bbp12"))))
+                "1i7h1jvsg115l5djn29n06xsqvygpfagczxy0i9f39zq6dr809ay"))))
     (build-system meson-build-system)
+    (arguments
+     '(#:configure-flags '("-D_systemd=false")))
     (native-inputs
      `(("pkg-config" ,pkg-config)
        ("intltool" ,intltool)
