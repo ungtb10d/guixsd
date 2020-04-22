@@ -2921,7 +2921,7 @@ controls using the Bonobo component framework.")
 (define-public libwnck
   (package
     (name "libwnck")
-    (version "3.32.0")
+    (version "3.36.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/" name "/"
@@ -2929,7 +2929,7 @@ controls using the Bonobo component framework.")
                                   name "-" version ".tar.xz"))
               (sha256
                (base32
-                "1jp3p1lnwnwi6fxl2rz3166cmwzwy9vqz896anpwc3wdy9f875cm"))))
+                "0pwjdhca9lz2n1gf9b60xf0m6ipf9snp8rqf9csj4pgdnd882l5w"))))
     (build-system meson-build-system)
     (native-inputs
      `(("pkg-config" ,pkg-config)
