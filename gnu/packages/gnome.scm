@@ -4399,7 +4399,7 @@ both a traditional UI or a modern UI with a GtkHeaderBar.")
 (define-public devhelp
   (package
     (name "devhelp")
-    (version "3.34.0")
+    (version "3.36.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/" name "/"
@@ -4407,7 +4407,7 @@ both a traditional UI or a modern UI with a GtkHeaderBar.")
                                   name "-" version ".tar.xz"))
               (sha256
                (base32
-                "0zpmn6fgkgiayvn4diia5df0s6s7dqrdnp3nrvpavsmgn0vhb4pg"))))
+                "0gcakbq2fci6cf5z8lakydqnynasp74djfy53bh7jjmw0a9yry2c"))))
     (build-system meson-build-system)
     (arguments
      '(#:glib-or-gtk? #t
