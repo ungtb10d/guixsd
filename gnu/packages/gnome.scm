@@ -4745,7 +4745,7 @@ GNOME Games, but it may be used by others.")
 (define-public gnome-klotski
   (package
     (name "gnome-klotski")
-    (version "3.34.0")
+    (version "3.36.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/" name "/"
@@ -4753,7 +4753,7 @@ GNOME Games, but it may be used by others.")
                                   name "-" version ".tar.xz"))
               (sha256
                (base32
-                "0sbx0bzy32lh2c9jp8v7gz788wn9y1la8mr5a7gf7370szsl4d4f"))))
+                "06gsg3s8hyhhsk11f1ld2anzv1czg1429483gbv9lr2p7fnq7pyy"))))
     (build-system meson-build-system)
     (arguments
      '(#:glib-or-gtk? #t
