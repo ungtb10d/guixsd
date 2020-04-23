@@ -703,7 +703,7 @@ sharing to the masses.")
 (define-public sushi
   (package
     (name "sushi")
-    (version "3.32.1")
+    (version "3.34.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/" name "/"
@@ -711,7 +711,7 @@ sharing to the masses.")
                                   name "-" version ".tar.xz"))
               (sha256
                (base32
-                "02idvqjk76lii9xyg3b1yz4rw721709bdm5j8ikjym6amcghl0aj"))))
+                "1zcr8wi5bgvvpb5ha1v96aiaz4vqqrsn6cvvalwzah6am85k78m8"))))
     (build-system meson-build-system)
     (arguments
      `(#:glib-or-gtk? #t
@@ -741,7 +741,7 @@ sharing to the masses.")
        ("gjs" ,gjs)
        ("gst-plugins-base" ,gst-plugins-base)
        ("gstreamer" ,gstreamer)
-       ("gtksourceview" ,gtksourceview-3)
+       ("gtksourceview" ,gtksourceview)
        ("harfbuzz" ,harfbuzz)
        ("libepoxy" ,libepoxy)
        ("libmusicbrainz" ,libmusicbrainz)
