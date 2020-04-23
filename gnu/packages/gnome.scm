@@ -8839,7 +8839,7 @@ Bluefish supports many programming and markup languages.")
 (define-public gnome-system-monitor
   (package
     (name "gnome-system-monitor")
-    (version "3.32.1")
+    (version "3.36.0")
     (source
      (origin
        (method url-fetch)
@@ -8848,14 +8848,21 @@ Bluefish supports many programming and markup languages.")
                            name "-" version ".tar.xz"))
        (sha256
         (base32
-         "1wd43qdgjav6xamq5z5cy8fri5zr01jga3plc9w95gcia0rk3ha8"))))
+         "1gipjaw708lv1zj1c9g09x4h4226kawam2kzdhdd6zjkzfghp9s0"))))
     (build-system meson-build-system)
     (arguments
      '(#:glib-or-gtk? #t
-       #:configure-flags '("-Dsystemd=false")))
+       #:configure-flags '("-Dsystemd=false")
+       #:phases
+       (modify-phases %standard-phases
+         (add-after 'unpack 'skip-gtk-update-icon-cache
+           (lambda _
+             ;; Don't create 'icon-theme.cache'
+             (substitute* "meson_post_install.py"
+               (("gtk-update-icon-cache") (which "true")))
+             #t)))))
     (native-inputs
      `(("glib:bin" ,glib "bin") ; for glib-mkenums.
-       ("gtk+" ,gtk+ "bin") ; gtk-update-icon-cache
        ("intltool" ,intltool)
        ("itstool" ,itstool)
        ("libgtop" ,libgtop)
