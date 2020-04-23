@@ -9556,7 +9556,7 @@ functionality.")
 (define-public gthumb
   (package
     (name "gthumb")
-    (version "3.8.2")
+    (version "3.10.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/gthumb/"
@@ -9564,7 +9564,7 @@ functionality.")
                                   "gthumb-" version ".tar.xz"))
               (sha256
                (base32
-                "15wqks35ks5dm7zj046dfd45vvrilan2ayfy2sxiprv7q74cip2q"))))
+                "0j7cxp4hhkvkckyvll6pmqkv5rwrknlzq9j1my0grb01b8wzhw9y"))))
     (build-system meson-build-system)
     (arguments
      `(#:glib-or-gtk? #t
@@ -9575,11 +9575,18 @@ functionality.")
                             "/lib/gthumb/extensions")
              (string-append "-Dcpp_link_args=-Wl,-rpath="
                             (assoc-ref %outputs "out")
-                            "/lib/gthumb/extensions"))))
+                            "/lib/gthumb/extensions"))
+       #:phases
+       (modify-phases %standard-phases
+         (add-after 'unpack 'skip-gtk-update-icon-cache
+           ;; Don't create 'icon-theme.cache'.
+           (lambda _
+             (substitute* "postinstall.py"
+               (("gtk-update-icon-cache") "true"))
+             #t)))))
     (native-inputs
      `(("pkg-config" ,pkg-config)
        ("glib:bin" ,glib "bin")                   ; for glib-compile-resources
-       ("gtk+:bin" ,gtk+ "bin")                   ; for gtk-update-icon-cache
        ("desktop-file-utils" ,desktop-file-utils) ; for update-desktop-database
        ("intltool" ,intltool)
        ("itstool" ,itstool)))
