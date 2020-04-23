@@ -1394,7 +1394,7 @@ and keep up to date translations of documentation.")
 (define-public gnome-font-viewer
   (package
     (name "gnome-font-viewer")
-    (version "3.30.0")
+    (version "3.34.0")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/gnome-font-viewer/"
@@ -1402,7 +1402,9 @@ and keep up to date translations of documentation.")
                                   "/gnome-font-viewer-" version ".tar.xz"))
               (sha256
                (base32
-                "1wwnx2zrlbd2d6np7m9s78alx6j6ranrnh1g2z6zrv9qcj8rpzz5"))))
+                "12xrsqwmvid7hksiw4zhj4jd1qwxn8w0czskbq4yqfprwn1havxa"))
+              (patches
+               (search-patches "gnome-font-viewer-CVE-2019-19308.patch"))))
     (build-system meson-build-system)
     (arguments
      '(#:phases
