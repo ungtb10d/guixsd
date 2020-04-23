@@ -7709,7 +7709,7 @@ can add your own files to the collection.")
 (define-public gnome-screenshot
   (package
     (name "gnome-screenshot")
-    (version "3.34.0")
+    (version "3.36.0")
     (source
      (origin
        (method url-fetch)
@@ -7718,7 +7718,7 @@ can add your own files to the collection.")
                            name "-" version ".tar.xz"))
        (sha256
         (base32
-         "1rmiq890j7gfn5mcz31xy6jfnnxgc17dq67bhn2k9m5ylbvza2n8"))))
+         "0rhj6fkpxfm26jv3vsn7yb2ybkc2k86ggy23nxa945q74y4msj9k"))))
     (build-system meson-build-system)
     (arguments
      '(#:phases
