@@ -1120,7 +1120,7 @@ to other formats.")
 (define-public gnome-characters
   (package
     (name "gnome-characters")
-    (version "3.30.0")
+    (version "3.34.0")
     (source
      (origin
        (method url-fetch)
@@ -1129,7 +1129,7 @@ to other formats.")
                            "/gnome-characters-" version ".tar.xz"))
        (sha256
         (base32
-         "08cwz39iwgsyyb2wqhb8vfbmh1cwfkgfiy7adp08w7rwqi99x3dp"))))
+         "0mqaxsa7hcmvid3zbzvxpfkp7s01ghiq6kaibmd3169axrr8ahql"))))
     (build-system meson-build-system)
     (arguments
      `(#:glib-or-gtk? #t
@@ -1154,7 +1154,7 @@ to other formats.")
        ("gtk+" ,gtk+)
        ("libunistring" ,libunistring)
        ("gnome-desktop" ,gnome-desktop)))
-    (home-page "https://wiki.gnome.org/Apps/CharacterMap")
+    (home-page "https://wiki.gnome.org/Apps/Characters")
     (synopsis "Find and insert unusual characters")
     (description "Characters is a simple utility application to find
 and insert unusual characters.  It allows you to quickly find the
