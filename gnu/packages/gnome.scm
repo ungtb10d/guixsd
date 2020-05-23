@@ -7356,6 +7356,7 @@ properties, screen resolution, and other GNOME parameters.")
        ("libcroco" ,libcroco)
        ("libgnomekbd" ,libgnomekbd)               ;for gkbd-keyboard-display
        ("libgweather" ,libgweather)
+       ("libnma" ,libnma)
        ("libsoup" ,libsoup)
        ("mesa-headers" ,mesa-headers)
        ("mutter" ,mutter)
