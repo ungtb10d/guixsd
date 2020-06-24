@@ -5890,7 +5890,11 @@ handler built in.")
                 "183bgl5jcx5y2r94lviqfw0a5w9089nxjd1z40k8vx9y2h60pm6j"))))
     (build-system haskell-build-system)
     (arguments
-     `(#:configure-flags '("-fsystem-lua")))
+     `(#:configure-flags
+       (list "-fsystem-lua"
+             (string-append "--extra-lib-dirs="
+                            (assoc-ref %build-inputs "lua")
+                            "/lib"))))
     (inputs
      `(("lua" ,lua)
        ("ghc-exceptions" ,ghc-exceptions)
