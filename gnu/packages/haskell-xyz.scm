@@ -1525,7 +1525,7 @@ call stacks with different versions of the compiler.")
   (package
     (name "ghc-case-insensitive")
     (version "1.2.0.11")
-    (outputs '("out" "doc"))
+    (outputs '("out" "static" "doc"))
     (source
      (origin
        (method url-fetch)
@@ -4096,7 +4096,7 @@ consuming feeds in both RSS (Really Simple Syndication) and Atom format.")
   (package
     (name "ghc-fgl")
     (version "5.7.0.1")
-    (outputs '("out" "doc"))
+    (outputs '("out" "static" "doc"))
     (source
      (origin
        (method url-fetch)
@@ -5212,7 +5212,7 @@ Happy works in a similar way to the yacc tool for C.")
   (package
     (name "ghc-hashable")
     (version "1.2.7.0")
-    (outputs '("out" "doc"))
+    (outputs '("out" "static" "doc"))
     (source
      (origin
        (method url-fetch)
@@ -8133,7 +8133,7 @@ ncurses.")
   (package
     (name "ghc-network")
     (version "2.8.0.1")
-    (outputs '("out" "doc"))
+    (outputs '("out" "static" "doc"))
     (source
      (origin
        (method url-fetch)
@@ -8227,7 +8227,7 @@ IPv4, IPv6 and MAC addresses.")
   (package
     (name "ghc-network-uri")
     (version "2.6.1.0")
-    (outputs '("out" "doc"))
+    (outputs '("out" "static" "doc"))
     (source
      (origin
        (method url-fetch)
@@ -8909,7 +8909,7 @@ building up, manipulating and serialising @code{Pandoc} structures.")
   (package
     (name "ghc-parallel")
     (version "3.2.2.0")
-    (outputs '("out" "doc"))
+    (outputs '("out" "static" "doc"))
     (source
      (origin
        (method url-fetch)
@@ -9075,7 +9075,7 @@ files/directories, and more.")
   (package
     (name "ghc-paths")
     (version "0.1.0.12")
-    (outputs '("out" "doc"))
+    (outputs '("out" "static" "doc"))
     (source
      (origin
        (method url-fetch)
@@ -9679,7 +9679,7 @@ Show instance.")
   (package
     (name "ghc-primitive")
     (version "0.6.4.0")
-    (outputs '("out" "doc"))
+    (outputs '("out" "static" "doc"))
     (source
      (origin
        (method url-fetch)
@@ -9948,7 +9948,7 @@ usable.")
   (package
     (name "ghc-random")
     (version "1.1")
-    (outputs '("out" "doc"))
+    (outputs '("out" "static" "doc"))
     (source
      (origin
        (method url-fetch)
@@ -11616,7 +11616,7 @@ used for example by QuickCheck, see quickcheck-special."  )
   (package
     (name "ghc-split")
     (version "0.2.3.3")
-    (outputs '("out" "doc"))
+    (outputs '("out" "static" "doc"))
     (source
      (origin
        (method url-fetch)
@@ -12151,7 +12151,7 @@ building Scalable Vector Graphics (SVG).")
   (package
     (name "ghc-syb")
     (version "0.7.1")
-    (outputs '("out" "doc"))
+    (outputs '("out" "static" "doc"))
     (source
      (origin
        (method url-fetch)
@@ -12596,7 +12596,7 @@ string metrics efficiently.")
   (package
     (name "ghc-tf-random")
     (version "0.5")
-    (outputs '("out" "doc"))
+    (outputs '("out" "static" "doc"))
     (source
      (origin
        (method url-fetch)
@@ -13585,7 +13585,7 @@ functions.")
   (package
     (name "ghc-unordered-containers")
     (version "0.2.10.0")
-    (outputs '("out" "doc"))
+    (outputs '("out" "static" "doc"))
     (source
      (origin
        (method url-fetch)
@@ -13940,7 +13940,7 @@ representing a store for a single element.")
   (package
     (name "ghc-vector")
     (version "0.12.0.3")
-    (outputs '("out" "doc"))
+    (outputs '("out" "static" "doc"))
     (source
      (origin
        (method url-fetch)
@@ -14527,7 +14527,7 @@ modifying, and extracting files from zip archives in Haskell.")
   (package
     (name "ghc-zlib")
     (version "0.6.2.1")
-    (outputs '("out" "doc"))
+    (outputs '("out" "static" "doc"))
     (source
      (origin
        (method url-fetch)
