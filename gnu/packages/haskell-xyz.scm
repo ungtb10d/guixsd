@@ -6882,7 +6882,10 @@ compiler versions.")
            #t))))
     (build-system haskell-build-system)
     (arguments
-     `(#:configure-flags `("--flags=system-libyaml")))
+     `(#:configure-flags
+       (list "--flags=system-libyaml"
+             (string-append "--extra-lib-dirs="
+                            (assoc-ref %build-inputs "libyaml") "/lib"))))
     (inputs
      `(("ghc-conduit" ,ghc-conduit)
        ("ghc-resourcet" ,ghc-resourcet)
