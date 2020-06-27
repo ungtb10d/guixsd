@@ -14550,7 +14550,12 @@ modifying, and extracting files from zip archives in Haskell.")
          "1l11jraslcrp9d4wnhwfyhwk4fsiq1aq8i6vj81vcq1m2zzi1y7h"))))
     (build-system haskell-build-system)
     (arguments
-     `(#:phases
+     `(#:configure-flags
+       (list (string-append "--extra-lib-dirs="
+                            (assoc-ref %build-inputs "zlib") "/lib")
+             (string-append "--extra-include-dirs="
+                            (assoc-ref %build-inputs "zlib") "/include"))
+       #:phases
        (modify-phases %standard-phases
          (add-before 'configure 'strip-test-framework-constraints
            (lambda _
