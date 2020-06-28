@@ -51,6 +51,7 @@
   #:use-module (gnu packages gl)
   #:use-module (gnu packages graphviz)
   #:use-module (gnu packages gtk)
+  #:use-module (gnu packages haskell)
   #:use-module (gnu packages haskell-apps)
   #:use-module (gnu packages haskell-check)
   #:use-module (gnu packages haskell-crypto)
@@ -72,7 +73,8 @@
   #:use-module (guix git-download)
   #:use-module (guix utils)
   #:use-module ((guix licenses) #:prefix license:)
-  #:use-module (guix packages))
+  #:use-module (guix packages)
+  #:use-module (srfi srfi-1))
 
 (define-public ghc-abstract-deque
   (package
@@ -8762,55 +8764,158 @@ code.  It was designed for use in @code{Pandoc}.")
         (base32
          "0dpjrr40h54cljzhvixyym07z792a9izg6b9dmqpjlgcg4rj0xx8"))))
     (build-system haskell-build-system)
+    (arguments
+     `(#:configure-flags
+       (list "-fstatic"
+             ;; Do not build trypandoc; this is the default but it's better to
+             ;; be explicit.
+             "-f-trypandoc"
+             ;; TODO: Without these we cannot link the Haskell libraries
+             ;; statically.  It would be nice if we could also build the
+             ;; shared libraries.
+             "--disable-shared"
+             "--disable-executable-dynamic"
+             ;; That's where we place all static libraries
+             "--extra-lib-dirs=static-libs/"
+             "--ghc-option=-static")
+       #:modules ((guix build haskell-build-system)
+                  (guix build utils)
+                  (ice-9 match)
+                  (srfi srfi-1))
+       #:phases
+       (modify-phases %standard-phases
+         (add-after 'unpack 'create-simple-paths-module
+           (lambda* (#:key outputs #:allow-other-keys)
+             (call-with-output-file "Paths_pandoc.hs"
+               (lambda (port)
+                 (format port "\
+{-# LANGUAGE CPP #-}
+{-# LANGUAGE NoRebindableSyntax #-}
+{-# OPTIONS_GHC -fno-warn-missing-import-lists #-}
+module Paths_pandoc (version,getDataDir,getDataFileName) where
+import Prelude
+import Data.Version (Version(..))
+import System.Info
+version :: Version
+version = Version [~a] []
+
+datadir :: FilePath
+datadir = \"~a/share/\" ++
+  arch ++ \"-\" ++
+  os ++ \"-\" ++
+  compilerName ++ \"-~a/pandoc-~a\"
+
+getDataDir :: IO FilePath
+getDataDir = return datadir
+
+getDataFileName :: FilePath -> IO FilePath
+getDataFileName name = do
+  dir <- getDataDir
+  return (dir ++ \"/\" ++ name)
+"
+                         (string-map (lambda (chr) (if (eq? chr #\.) #\, chr)) ,version)
+                         (assoc-ref outputs "out")
+                         ,(package-version ghc)
+                         ,version)))
+             #t))
+         (add-after 'unpack 'prepare-static-libraries
+           (lambda* (#:key inputs #:allow-other-keys)
+             (mkdir-p (string-append (getcwd) "/static-libs"))
+             (for-each
+              (lambda (input)
+                (when (or (string-prefix? "static-" (car input))
+                          (string-prefix? "ghc" (car input)))
+                  (match (find-files (cdr input) "\\.a$")
+                    ((and (first . rest) libs)
+                     (for-each (lambda (lib)
+                                 (let ((target (string-append (getcwd) "/static-libs/"
+                                                              (basename lib))))
+                                   (unless (file-exists? target)
+                                     (symlink first target))))
+                               libs))
+                    (_ #f))))
+              inputs)
+             #t))
+         (delete 'check)
+         (add-after 'install 'post-install-check
+           (assoc-ref %standard-phases 'check)))))
+    (outputs '("out" "lib" "static" "doc"))
     (inputs
-     `(("ghc-aeson" ,ghc-aeson)
-       ("ghc-aeson-pretty" ,ghc-aeson-pretty)
-       ("ghc-base64-bytestring" ,ghc-base64-bytestring)
-       ("ghc-blaze-html" ,ghc-blaze-html)
-       ("ghc-blaze-markup" ,ghc-blaze-markup)
-       ("ghc-cmark-gfm" ,ghc-cmark-gfm)
-       ("ghc-data-default" ,ghc-data-default)
-       ("ghc-diff" ,ghc-diff)
-       ("ghc-doctemplates" ,ghc-doctemplates)
-       ("ghc-executable-path" ,ghc-executable-path)
-       ("ghc-glob" ,ghc-glob)
-       ("ghc-haddock-library" ,ghc-haddock-library)
-       ("ghc-hslua" ,ghc-hslua)
-       ("ghc-hslua-module-system" ,ghc-hslua-module-system)
-       ("ghc-hslua-module-text" ,ghc-hslua-module-text)
-       ("ghc-hsyaml" ,ghc-hsyaml)
-       ("ghc-http" ,ghc-http)
-       ("ghc-http-client" ,ghc-http-client)
-       ("ghc-http-client-tls" ,ghc-http-client-tls)
-       ("ghc-http-types" ,ghc-http-types)
-       ("ghc-ipynb" ,ghc-ipynb)
-       ("ghc-juicypixels" ,ghc-juicypixels)
-       ("ghc-network" ,ghc-network)
-       ("ghc-network-uri" ,ghc-network-uri)
-       ("ghc-pandoc-types" ,ghc-pandoc-types)
-       ("ghc-random" ,ghc-random)
-       ("ghc-scientific" ,ghc-scientific)
-       ("ghc-sha" ,ghc-sha)
-       ("ghc-skylighting" ,ghc-skylighting)
-       ("ghc-split" ,ghc-split)
-       ("ghc-syb" ,ghc-syb)
-       ("ghc-tagsoup" ,ghc-tagsoup)
-       ("ghc-temporary" ,ghc-temporary)
-       ("ghc-texmath" ,ghc-texmath)
-       ("ghc-unicode-transforms" ,ghc-unicode-transforms)
-       ("ghc-unordered-containers" ,ghc-unordered-containers)
-       ("ghc-vector" ,ghc-vector)
-       ("ghc-xml" ,ghc-xml)
-       ("ghc-zip-archive" ,ghc-zip-archive)
-       ("ghc-zlib" ,ghc-zlib)))
+     (let* ((direct-inputs
+             `(("ghc-aeson" ,ghc-aeson)
+               ("ghc-aeson-pretty" ,ghc-aeson-pretty)
+               ("ghc-base64-bytestring" ,ghc-base64-bytestring)
+               ("ghc-blaze-html" ,ghc-blaze-html)
+               ("ghc-blaze-markup" ,ghc-blaze-markup)
+               ("ghc-cmark-gfm" ,ghc-cmark-gfm)
+               ("ghc-data-default" ,ghc-data-default)
+               ("ghc-diff" ,ghc-diff)
+               ("ghc-doctemplates" ,ghc-doctemplates)
+               ("ghc-executable-path" ,ghc-executable-path)
+               ("ghc-glob" ,ghc-glob)
+               ("ghc-haddock-library" ,ghc-haddock-library)
+               ("ghc-hslua" ,ghc-hslua)
+               ("ghc-hslua-module-system" ,ghc-hslua-module-system)
+               ("ghc-hslua-module-text" ,ghc-hslua-module-text)
+               ("ghc-hsyaml" ,ghc-hsyaml)
+               ("ghc-http" ,ghc-http)
+               ("ghc-http-client" ,ghc-http-client)
+               ("ghc-http-client-tls" ,ghc-http-client-tls)
+               ("ghc-http-types" ,ghc-http-types)
+               ("ghc-ipynb" ,ghc-ipynb)
+               ("ghc-juicypixels" ,ghc-juicypixels)
+               ("ghc-network" ,ghc-network)
+               ("ghc-network-uri" ,ghc-network-uri)
+               ("ghc-pandoc-types" ,ghc-pandoc-types)
+               ("ghc-random" ,ghc-random)
+               ("ghc-scientific" ,ghc-scientific)
+               ("ghc-sha" ,ghc-sha)
+               ("ghc-skylighting" ,ghc-skylighting)
+               ("ghc-split" ,ghc-split)
+               ("ghc-syb" ,ghc-syb)
+               ("ghc-tagsoup" ,ghc-tagsoup)
+               ("ghc-temporary" ,ghc-temporary)
+               ("ghc-texmath" ,ghc-texmath)
+               ("ghc-unicode-transforms" ,ghc-unicode-transforms)
+               ("ghc-unordered-containers" ,ghc-unordered-containers)
+               ("ghc-vector" ,ghc-vector)
+               ("ghc-xml" ,ghc-xml)
+               ("ghc-zip-archive" ,ghc-zip-archive)
+               ("ghc-zlib" ,ghc-zlib)))
+            (all-static-inputs
+             (map (lambda (pkg)
+                    (list (string-append "static-" (package-name pkg))
+                          pkg "static"))
+                  (delete-duplicates
+                   (append (map cadr direct-inputs)
+                           (filter (lambda (pkg)
+                                     (string-prefix? "ghc-" (package-name pkg)))
+                                   (package-closure
+                                    (map cadr direct-inputs))))))))
+       `(("zlib:static" ,zlib "static")
+         ,@all-static-inputs
+         ,@direct-inputs)))
     (native-inputs
-     `(("ghc-tasty" ,ghc-tasty)
-       ("ghc-tasty-golden" ,ghc-tasty-golden)
-       ("ghc-tasty-hunit" ,ghc-tasty-hunit)
-       ("ghc-tasty-lua" ,ghc-tasty-lua)
-       ("ghc-tasty-quickcheck" ,ghc-tasty-quickcheck)
-       ("ghc-quickcheck" ,ghc-quickcheck)
-       ("ghc-hunit" ,ghc-hunit)))
+     (let* ((direct-inputs
+             `(("ghc-tasty" ,ghc-tasty)
+               ("ghc-tasty-golden" ,ghc-tasty-golden)
+               ("ghc-tasty-hunit" ,ghc-tasty-hunit)
+               ("ghc-tasty-lua" ,ghc-tasty-lua)
+               ("ghc-tasty-quickcheck" ,ghc-tasty-quickcheck)
+               ("ghc-quickcheck" ,ghc-quickcheck)
+               ("ghc-hunit" ,ghc-hunit)))
+            (all-static-inputs
+             (map (lambda (pkg)
+                    (list (string-append "static-" (package-name pkg))
+                          pkg "static"))
+                  (delete-duplicates
+                   (append (map cadr direct-inputs)
+                           (filter (lambda (pkg)
+                                     (string-prefix? "ghc-" (package-name pkg)))
+                                   (package-closure
+                                    (map cadr direct-inputs))))))))
+       `(,@all-static-inputs
+         ,@direct-inputs)))
     (home-page "https://pandoc.org")
     (synopsis "Conversion between markup formats")
     (description
