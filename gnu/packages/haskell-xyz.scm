@@ -8950,7 +8950,18 @@ provided for those who need a drop-in replacement for Markdown.pl.")
          "15mm17awgi1b5yazwhr5nh8b59qml1qk6pz6gpyijks70fq2arsv"))))
     (build-system haskell-build-system)
     (arguments
-     `(#:phases
+     `(#:configure-flags
+       (list "-fstatic"
+             "--disable-shared"
+             "--disable-executable-dynamic"
+             ;; That's where we place all static libraries
+             "--extra-lib-dirs=static-libs/"
+             "--ghc-option=-static")
+       #:modules ((guix build haskell-build-system)
+                  (guix build utils)
+                  (ice-9 match)
+                  (srfi srfi-1))
+       #:phases
        (modify-phases %standard-phases
          ;; Many YAML tests (44) are failing do to changes in ghc-yaml:
          ;; <https://github.com/jgm/pandoc-citeproc/issues/342>.
@@ -8962,26 +8973,93 @@ provided for those who need a drop-in replacement for Markdown.pl.")
          ;; Tests need to be run after installation.
          (delete 'check)
          (add-after 'install 'post-install-check
-           (assoc-ref %standard-phases 'check)))))
+           (assoc-ref %standard-phases 'check))
+         (add-after 'unpack 'create-simple-paths-module
+           (lambda* (#:key outputs #:allow-other-keys)
+             (call-with-output-file "Paths_pandoc_citeproc.hs"
+               (lambda (port)
+                 (format port "\
+{-# LANGUAGE CPP #-}
+{-# LANGUAGE NoRebindableSyntax #-}
+{-# OPTIONS_GHC -fno-warn-missing-import-lists #-}
+module Paths_pandoc_citeproc (version,getDataFileName) where
+import Prelude
+import Data.Version (Version(..))
+import System.Info
+version :: Version
+version = Version [~a] []
+
+datadir :: FilePath
+datadir = \"~a/share/\" ++
+  arch ++ \"-\" ++
+  os ++ \"-\" ++
+  compilerName ++ \"-~a/pandoc-citeproc-~a\"
+
+getDataDir :: IO FilePath
+getDataDir = return datadir
+
+getDataFileName :: FilePath -> IO FilePath
+getDataFileName name = do
+  dir <- getDataDir
+  return (dir ++ \"/\" ++ name)
+"
+                         (string-map (lambda (chr) (if (eq? chr #\.) #\, chr)) ,version)
+                         (assoc-ref outputs "out")
+                         ,(package-version ghc)
+                         ,version)))
+             #t))
+         (add-after 'unpack 'prepare-static-libraries
+           (lambda* (#:key inputs #:allow-other-keys)
+             (mkdir-p (string-append (getcwd) "/static-libs"))
+             (for-each
+              (lambda (input)
+                (when (or (string-prefix? "static-" (car input))
+                          (string-prefix? "ghc" (car input)))
+                  (match (find-files (cdr input) "\\.a$")
+                    ((and (first . rest) libs)
+                     (for-each (lambda (lib)
+                                 (let ((target (string-append (getcwd) "/static-libs/"
+                                                              (basename lib))))
+                                   (unless (file-exists? target)
+                                     (symlink first target))))
+                               libs))
+                    (_ #f))))
+              inputs)
+             #t)))))
+    (outputs '("out" "lib" "static" "doc"))
     (inputs
-     `(("ghc-pandoc-types" ,ghc-pandoc-types)
-       ("ghc-pandoc" ,ghc-pandoc)
-       ("ghc-tagsoup" ,ghc-tagsoup)
-       ("ghc-aeson" ,ghc-aeson)
-       ("ghc-vector" ,ghc-vector)
-       ("ghc-xml-conduit" ,ghc-xml-conduit)
-       ("ghc-unordered-containers" ,ghc-unordered-containers)
-       ("ghc-data-default" ,ghc-data-default)
-       ("ghc-setenv" ,ghc-setenv)
-       ("ghc-split" ,ghc-split)
-       ("ghc-yaml" ,ghc-yaml)
-       ("ghc-hs-bibutils" ,ghc-hs-bibutils)
-       ("ghc-rfc5051" ,ghc-rfc5051)
-       ("ghc-syb" ,ghc-syb)
-       ("ghc-old-locale" ,ghc-old-locale)
-       ("ghc-aeson-pretty" ,ghc-aeson-pretty)
-       ("ghc-attoparsec" ,ghc-attoparsec)
-       ("ghc-temporary" ,ghc-temporary)))
+     (let* ((direct-inputs
+             `(("ghc-pandoc-types" ,ghc-pandoc-types)
+               ("ghc-pandoc" ,ghc-pandoc "lib")
+               ("ghc-tagsoup" ,ghc-tagsoup)
+               ("ghc-aeson" ,ghc-aeson)
+               ("ghc-vector" ,ghc-vector)
+               ("ghc-xml-conduit" ,ghc-xml-conduit)
+               ("ghc-unordered-containers" ,ghc-unordered-containers)
+               ("ghc-data-default" ,ghc-data-default)
+               ("ghc-setenv" ,ghc-setenv)
+               ("ghc-split" ,ghc-split)
+               ("ghc-yaml" ,ghc-yaml)
+               ("ghc-hs-bibutils" ,ghc-hs-bibutils)
+               ("ghc-rfc5051" ,ghc-rfc5051)
+               ("ghc-syb" ,ghc-syb)
+               ("ghc-old-locale" ,ghc-old-locale)
+               ("ghc-aeson-pretty" ,ghc-aeson-pretty)
+               ("ghc-attoparsec" ,ghc-attoparsec)
+               ("ghc-temporary" ,ghc-temporary)))
+            (all-static-inputs
+             (map (lambda (pkg)
+                    (list (string-append "static-" (package-name pkg))
+                          pkg "static"))
+                  (delete-duplicates
+                   (append (map cadr direct-inputs)
+                           (filter (lambda (pkg)
+                                     (string-prefix? "ghc-" (package-name pkg)))
+                                   (package-closure
+                                    (map cadr direct-inputs))))))))
+       `(("zlib:static" ,zlib "static")
+         ,@all-static-inputs
+         ,@direct-inputs)))
     (home-page "https://github.com/jgm/pandoc-citeproc")
     (synopsis "Library for using pandoc with citeproc")
     (description
