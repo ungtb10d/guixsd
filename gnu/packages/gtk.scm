@@ -583,64 +583,51 @@ highlighting and other features typical of a source code editor.")
 
 (define-public gdk-pixbuf
   (package
-   (name "gdk-pixbuf")
-   (version "2.40.0")
-   (source (origin
-            (method url-fetch)
-            (uri (string-append "mirror://gnome/sources/" name "/"
-                                (version-major+minor version)  "/"
-                                name "-" version ".tar.xz"))
-            (patches (search-patches "gdk-pixbuf-CVE-2020-29385.patch"))
-            (sha256
-             (base32
-              "1rnlx9yfw970maxi2x6niaxmih5la11q1ilr7gzshz2kk585k0hm"))))
-   (build-system meson-build-system)
-   (arguments
-    `(#:configure-flags '("-Dinstalled_tests=false")
-      #:phases
-      (modify-phases %standard-phases
-        (add-after
-         'unpack 'disable-failing-tests
-         (lambda _
-           (substitute* "tests/meson.build"
-             ;; XXX FIXME: This test fails on armhf machines with:
-             ;; SKIP Not enough memory to load bitmap image
-             ;; ERROR: cve-2015-4491 - too few tests run (expected 4, got 2)
-             ((".*'cve-2015-4491'.*") "")
-             ;; XXX FIXME: This test fails with:
-             ;; ERROR:pixbuf-jpeg.c:74:test_type9_rotation_exif_tag:
-             ;; assertion failed (error == NULL): Data differ
-             ;; (gdk-pixbuf-error-quark, 0)
-             ((".*'pixbuf-jpeg'.*") ""))
-           #t))
-        ;; The slow tests take longer than the specified timeout.
-        ,@(if (any (cute string=? <> (%current-system))
-                   '("armhf-linux" "aarch64-linux"))
-            '((replace 'check
-              (lambda _
-                (invoke "meson" "test" "--timeout-multiplier" "5"))))
-            '()))))
-   (propagated-inputs
-    `(;; Required by gdk-pixbuf-2.0.pc
-      ("glib" ,glib)
-      ("libpng" ,libpng)
-      ;; Used for testing and required at runtime.
-      ("shared-mime-info" ,shared-mime-info)))
-   (inputs
-    `(("libjpeg" ,libjpeg-turbo)
-      ("libtiff" ,libtiff)
-      ("libx11"  ,libx11)))
-   (native-inputs
+    (name "gdk-pixbuf")
+    (version "2.42.2")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "mirror://gnome/sources/" name "/"
+                                  (version-major+minor version)  "/"
+                                  name "-" version ".tar.xz"))
+              (sha256
+               (base32
+                "05ggmzwvrxq9w4zcvmrnnd6qplsmb4n95lj4q607c7arzlf6mil3"))))
+    (build-system meson-build-system)
+    (arguments
+     `(#:meson ,meson-0.55
+       #:glib-or-gtk? #t ; To wrap binaries and/or compile schemas
+       #:configure-flags '("-Dinstalled_tests=false")
+       #:phases
+       (modify-phases %standard-phases
+         ;; The slow tests take longer than the specified timeout.
+         ,@(if (any (cute string=? <> (%current-system))
+                    '("armhf-linux" "aarch64-linux"))
+               '((replace 'check
+                   (lambda _
+                     (invoke "meson" "test" "--timeout-multiplier" "5"))))
+               '()))))
+    (propagated-inputs
+     `( ;; Required by gdk-pixbuf-2.0.pc
+       ("glib" ,glib)
+       ("libpng" ,libpng)
+       ;; Used for testing and required at runtime.
+       ("shared-mime-info" ,shared-mime-info)))
+    (inputs
+     `(("libjpeg" ,libjpeg-turbo)
+       ("libtiff" ,libtiff)
+       ("libx11"  ,libx11)))
+    (native-inputs
      `(("pkg-config" ,pkg-config)
        ("gettext" ,gettext-minimal)
-       ("glib" ,glib "bin")                               ; glib-mkenums, etc.
+       ("glib" ,glib "bin")             ; glib-mkenums, etc.
        ("gobject-introspection" ,gobject-introspection))) ; g-ir-compiler, etc.
-   (synopsis "GNOME image loading and manipulation library")
-   (description
-    "GdkPixbuf is a library for image loading and manipulation developed
+    (synopsis "GNOME image loading and manipulation library")
+    (description
+     "GdkPixbuf is a library for image loading and manipulation developed
 in the GNOME project.")
-   (license license:lgpl2.0+)
-   (home-page "https://developer.gnome.org/gdk-pixbuf/")))
+    (license license:lgpl2.0+)
+    (home-page "https://developer.gnome.org/gdk-pixbuf/")))
 
 ;; To build gdk-pixbuf with SVG support, we need librsvg, and librsvg depends
 ;; on gdk-pixbuf, so this new varibale.  Also, librsvg adds 90MiB to the
