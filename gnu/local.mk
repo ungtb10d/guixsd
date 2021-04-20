@@ -1113,6 +1113,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/ghostscript-no-header-creationdate.patch \
   %D%/packages/patches/giara-fix-login.patch                      \
   %D%/packages/patches/glib-appinfo-watch.patch			\
+  %D%/packages/patches/glib-skip-failing-test.patch		\
   %D%/packages/patches/glibc-CVE-2018-11236.patch		\
   %D%/packages/patches/glibc-CVE-2018-11237.patch		\
   %D%/packages/patches/glibc-CVE-2019-7309.patch		\

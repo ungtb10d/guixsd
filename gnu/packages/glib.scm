@@ -186,7 +186,8 @@ shared NFS home directories.")
        (sha256
         (base32 "1sh3h6b734cxhdd1qlzvhxq6rc7k73dsisap5y3s419s9xc4ywv7"))
        (patches
-        (search-patches "glib-appinfo-watch.patch"))
+        (search-patches "glib-appinfo-watch.patch"
+                        "glib-skip-failing-test.patch"))
        (modules '((guix build utils)))
        (snippet
         '(begin
@@ -202,17 +203,6 @@ shared NFS home directories.")
        #:configure-flags '("-Dman=true")
        #:phases
        (modify-phases %standard-phases
-         ;; TODO: Remove the conditional in the next core-updates cycle.
-         ;; Needed to build glib on slower ARM nodes.
-         ,@(if (string-prefix? "arm" (%current-system))
-               `((add-after 'unpack 'increase-test-timeout
-                   (lambda _
-                     (substitute* "meson.build"
-                       (("test_timeout = 60")
-                        "test_timeout = 90")
-                       (("test_timeout_slow = 120")
-                        "test_timeout_slow = 180")))))
-               '())
          (add-after 'unpack 'disable-failing-tests
            (lambda _
              (with-directory-excursion "glib/tests"
