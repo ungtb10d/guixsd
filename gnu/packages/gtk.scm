@@ -340,7 +340,8 @@ applications.")
                 "0ijbkcs6217ygzphlpi0vajxkccifdbsl0jdjpy8wz11h9f19sin"))))
     (build-system meson-build-system)
     (arguments
-     '(#:glib-or-gtk? #t     ; To wrap binaries and/or compile schemas
+     `(#:meson ,meson-0.55 ; Project requires meson-0.55.3.
+       #:glib-or-gtk? #t     ; To wrap binaries and/or compile schemas
        #:phases (modify-phases %standard-phases
                   (add-after 'unpack 'disable-cantarell-tests
                     (lambda _
