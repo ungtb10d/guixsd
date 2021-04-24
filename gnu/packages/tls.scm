@@ -214,7 +214,10 @@ living in the same process.")
 
              ;; FIXME: Temporarily disable p11-kit support since it is not
              ;; working on mips64el.
-             "--without-p11-kit")
+             ,@(if (string-prefix? "mips64el" (or (%current-target-system)
+                                 (%current-system)))
+                 '("--without-p11-kit")
+                 '()))
 
        #:phases (modify-phases %standard-phases
                   (add-after
@@ -250,6 +253,7 @@ living in the same process.")
      ;; These are all in the 'Requires.private' field of gnutls.pc.
      `(("libtasn1" ,libtasn1)
        ("libidn2" ,libidn2)
+       ("p11-kit" ,p11-kit)
        ("nettle" ,nettle)
        ("zlib" ,zlib)))
     (home-page "https://www.gnu.org/software/gnutls/")
