@@ -171,6 +171,7 @@
   #:use-module (gnu packages protobuf)
   #:use-module (gnu packages pulseaudio)
   #:use-module (gnu packages python)
+  #:use-module (gnu packages python-check)
   #:use-module (gnu packages python-compression)
   #:use-module (gnu packages python-crypto)
   #:use-module (gnu packages python-web)
@@ -8725,7 +8726,7 @@ easy, safe, and automatic.")
 (define-public tracker
   (package
     (name "tracker")
-    (version "2.3.5")
+    (version "3.1.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/tracker/"
@@ -8733,22 +8734,44 @@ easy, safe, and automatic.")
                                   "tracker-" version ".tar.xz"))
               (sha256
                (base32
-                "1ixxyqjlv7pnl4j8g6b72fkbjvzfspza8y71ppkncry8i6xkr223"))))
+                "1rwafk58dm8fpfdb3yk77g0f9gxkk5dy8hm2yx26y1jlhkly4xj3"))))
     (build-system meson-build-system)
     (outputs '("out" "doc"))
     (arguments
      `(#:glib-or-gtk? #t
        #:configure-flags
        (list
-        "-Ddocs=true"
-        ;; Otherwise, the RUNPATH will lack the final path component.
-        (string-append "-Dc_link_args=-Wl,-rpath="
-                       (assoc-ref %outputs "out") "/lib:"
-                       (assoc-ref %outputs "out") "/lib/tracker-2.0"))
+        "-Dsystemd_user_services=false") ; not applicable
        #:phases
        (modify-phases %standard-phases
-         (add-after 'unpack 'patch-docbook-xml
+         (add-after 'unpack 'adjust-tests
            (lambda* (#:key inputs #:allow-other-keys)
+             ;; Use correct shell path.
+             (substitute* "utils/trackertestutils/__main__.py"
+               (("shell =.*$")
+                (string-append "shell = '"
+                               (assoc-ref inputs "bash")
+                               "/bin/bash'")))
+             ;; Due to syntax error bug.
+             ;; Refer, https://gitlab.gnome.org/GNOME/tracker/-/issues/307
+             (with-directory-excursion "tests"
+               (substitute* "libtracker-data/meson.build"
+                 (("[ \t]*'sparql'") "")))))
+         (add-after 'unpack 'patch-docs
+           (lambda* (#:key inputs #:allow-other-keys)
+             ;; Don't rename documentation directories,
+             ;; during installation.
+             (with-directory-excursion "docs/reference"
+               (substitute* (find-files "." "meson.build")
+                 (("[ \t]*module_version: tracker_api_major,")
+                  "")))
+             ;; Fix asciidoc references.
+             (with-directory-excursion "docs/manpages"
+               (substitute* "meson.build"
+                 (("/etc/asciidoc/docbook-xsl/")
+                  (string-append (assoc-ref inputs "asciidoc")
+                                 "/etc/asciidoc/docbook-xsl/"))))
+             ;; Fix docbook references.
              (with-directory-excursion "docs/reference"
                (substitute* (find-files "." "\\..*ml$")
                  (("http://www.oasis-open.org/docbook/xml/4.5/")
@@ -8760,11 +8783,17 @@ easy, safe, and automatic.")
                  (("http://www.oasis-open.org/docbook/xml/4.1.2/")
                   (string-append (assoc-ref inputs "docbook-xml-4.1.2")
                                  "/xml/dtd/docbook/"))))))
-         (add-before 'check 'pre-check
-           (lambda _
-             ;; Some tests expect to write to $HOME.
-             (setenv "HOME" "/tmp")
-             #t))
+         (replace 'check
+           (lambda* (#:key tests? #:allow-other-keys)
+             (when tests?
+               ;; Tests write to $HOME.
+               (setenv "HOME" (getcwd))
+               ;; Tests look for $XDG_RUNTIME_DIR.
+               (setenv "XDG_RUNTIME_DIR" (getcwd))
+               ;; For missing '/etc/machine-id'.
+               (setenv "DBUS_FATAL_WARNINGS" "0")
+               ;; Tests require d-bus session.
+               (invoke "dbus-launch" "ninja" "test"))))
          (add-after 'install 'move-doc
            (lambda* (#:key outputs #:allow-other-keys)
              (let* ((out (assoc-ref outputs "out"))
@@ -8774,7 +8803,8 @@ easy, safe, and automatic.")
                 (string-append out "/share/gtk-doc")
                 (string-append doc "/share/gtk-doc"))))))))
     (native-inputs
-     `(("docbook-xml-4.1.2" ,docbook-xml-4.1.2)
+     `(("asciidoc" ,asciidoc)
+       ("docbook-xml-4.1.2" ,docbook-xml-4.1.2)
        ("docbook-xml-4.3" ,docbook-xml-4.3)
        ("docbook-xml-4.5" ,docbook-xml)
        ("docbook-xsl" ,docbook-xsl)
@@ -8785,10 +8815,13 @@ easy, safe, and automatic.")
        ("intltool" ,intltool)
        ("pkg-config" ,pkg-config)
        ("python" ,python-wrapper)       ; for patch-shebangs phase
-       ("vala" ,vala)))
+       ("python-tappy" ,python-tappy)
+       ("vala" ,vala)
+       ("xsltproc" ,libxslt)))
     (inputs
      `(("bash-completion" ,bash-completion) ; for installing bash-completion files
        ("dbus" ,dbus)
+       ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
        ("sqlite" ,sqlite)
        ("libxml2" ,libxml2)
        ("icu4c" ,icu4c) ; libunistring gets miner-miner-fs test to fail.
