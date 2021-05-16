@@ -135,6 +135,7 @@
   #:use-module (gnu packages inkscape)
   #:use-module (gnu packages iso-codes)
   #:use-module (gnu packages kerberos)
+  #:use-module (gnu packages language)
   #:use-module (gnu packages libcanberra)
   #:use-module (gnu packages libffi)
   #:use-module (gnu packages libunistring)
@@ -8754,14 +8755,20 @@ easy, safe, and automatic.")
        ("python-pygobject" ,python-pygobject)
        ("intltool" ,intltool)
        ("pkg-config" ,pkg-config)
+       ("python" ,python-wrapper)       ; for patch-shebangs phase
        ("vala" ,vala)))
     (inputs
-     `(("dbus" ,dbus)
+     `(("bash-completion" ,bash-completion) ; for installing bash-completion files
+       ("dbus" ,dbus)
        ("sqlite" ,sqlite)
        ("libxml2" ,libxml2)
-       ("icu4c" ,icu4c)                 ; libunistring gets miner-miner-fs test to fail.
+       ("icu4c" ,icu4c) ; libunistring gets miner-miner-fs test to fail.
        ("json-glib" ,json-glib)
-       ("libsoup" ,libsoup)))
+       ("libnm" ,network-manager) ; for network status detection support
+       ("libsoup" ,libsoup)
+       ("stemmer" ,libstemmer)))       ; for language stemming support
+    (propagated-inputs
+     `(("glib" ,glib)))                 ; referenced in .pc files
     (synopsis "Metadata database, indexer and search tool")
     (home-page "https://wiki.gnome.org/Projects/Tracker")
     (description
