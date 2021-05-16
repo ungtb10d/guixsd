@@ -8735,23 +8735,52 @@ easy, safe, and automatic.")
                (base32
                 "1ixxyqjlv7pnl4j8g6b72fkbjvzfspza8y71ppkncry8i6xkr223"))))
     (build-system meson-build-system)
+    (outputs '("out" "doc"))
     (arguments
      `(#:glib-or-gtk? #t
        #:configure-flags
-       ;; Otherwise, the RUNPATH will lack the final path component.
-       (list (string-append "-Dc_link_args=-Wl,-rpath="
-                            (assoc-ref %outputs "out") "/lib:"
-                            (assoc-ref %outputs "out") "/lib/tracker-2.0"))
+       (list
+        "-Ddocs=true"
+        ;; Otherwise, the RUNPATH will lack the final path component.
+        (string-append "-Dc_link_args=-Wl,-rpath="
+                       (assoc-ref %outputs "out") "/lib:"
+                       (assoc-ref %outputs "out") "/lib/tracker-2.0"))
        #:phases
        (modify-phases %standard-phases
+         (add-after 'unpack 'patch-docbook-xml
+           (lambda* (#:key inputs #:allow-other-keys)
+             (with-directory-excursion "docs/reference"
+               (substitute* (find-files "." "\\..*ml$")
+                 (("http://www.oasis-open.org/docbook/xml/4.5/")
+                  (string-append (assoc-ref inputs "docbook-xml-4.5")
+                                 "/xml/dtd/docbook/"))
+                 (("http://www.oasis-open.org/docbook/xml/4.3/")
+                  (string-append (assoc-ref inputs "docbook-xml-4.3")
+                                 "/xml/dtd/docbook/"))
+                 (("http://www.oasis-open.org/docbook/xml/4.1.2/")
+                  (string-append (assoc-ref inputs "docbook-xml-4.1.2")
+                                 "/xml/dtd/docbook/"))))))
          (add-before 'check 'pre-check
            (lambda _
              ;; Some tests expect to write to $HOME.
              (setenv "HOME" "/tmp")
-             #t)))))
+             #t))
+         (add-after 'install 'move-doc
+           (lambda* (#:key outputs #:allow-other-keys)
+             (let* ((out (assoc-ref outputs "out"))
+                    (doc (assoc-ref outputs "doc")))
+               (mkdir-p (string-append doc "/share"))
+               (rename-file
+                (string-append out "/share/gtk-doc")
+                (string-append doc "/share/gtk-doc"))))))))
     (native-inputs
-     `(("glib:bin" ,glib "bin")
+     `(("docbook-xml-4.1.2" ,docbook-xml-4.1.2)
+       ("docbook-xml-4.3" ,docbook-xml-4.3)
+       ("docbook-xml-4.5" ,docbook-xml)
+       ("docbook-xsl" ,docbook-xsl)
+       ("glib:bin" ,glib "bin")
        ("gobject-introspection" ,gobject-introspection)
+       ("gtk-doc" ,gtk-doc)
        ("python-pygobject" ,python-pygobject)
        ("intltool" ,intltool)
        ("pkg-config" ,pkg-config)
