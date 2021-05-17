@@ -8823,14 +8823,15 @@ easy, safe, and automatic.")
        ("dbus" ,dbus)
        ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
        ("sqlite" ,sqlite)
-       ("libxml2" ,libxml2)
        ("icu4c" ,icu4c) ; libunistring gets miner-miner-fs test to fail.
-       ("json-glib" ,json-glib)
        ("libnm" ,network-manager) ; for network status detection support
-       ("libsoup" ,libsoup)
-       ("stemmer" ,libstemmer)))       ; for language stemming support
+       ("stemmer" ,libstemmer)))  ; for language stemming support
     (propagated-inputs
-     `(("glib" ,glib)))                 ; referenced in .pc files
+     ;; The following are referenced in pkg-config file.
+     `(("glib" ,glib)
+       ("json-glib" ,json-glib)
+       ("libsoup" ,libsoup)
+       ("libxml2" ,libxml2)))
     (synopsis "Metadata database, indexer and search tool")
     (home-page "https://wiki.gnome.org/Projects/Tracker")
     (description
