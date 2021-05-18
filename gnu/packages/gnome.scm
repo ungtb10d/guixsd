@@ -8864,7 +8864,7 @@ endpoint and it understands SPARQL. ")
 (define-public tracker-miners
   (package
     (name "tracker-miners")
-    (version "2.3.4")
+    (version "3.1.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/tracker-miners/"
@@ -8872,34 +8872,79 @@ endpoint and it understands SPARQL. ")
                                   "/tracker-miners-" version ".tar.xz"))
               (sha256
                (base32
-                "10wy8d8ski52k809p7s6lbw72qmg05bbmhnl00vx4qrbzqyxvc0b"))))
+                "1f5q0d45n9phcab65il7rn0wff85pyz5yh94lmi2hvqm3csn3lz4"))))
     (build-system meson-build-system)
     (arguments
      `(#:glib-or-gtk? #t
        #:configure-flags
-       (list "-Dminer_rss=false" ; libgrss is required.
-             ;; Ensure the RUNPATH contains all installed library locations.
-             (string-append "-Dc_link_args=-Wl,-rpath="
-                            (assoc-ref %outputs "out")
-                            "/lib/tracker-miners-2.0")
-             ;; TODO: Enable functional tests. Currently, the following error
-             ;; appears:
-             ;; Exception: The functional tests require DConf to be the default
-             ;; GSettings backend. Got GKeyfileSettingsBackend instead.
-             "-Dfunctional_tests=false")))
+       (list
+        "-Dsystemd_user_services=false" ; not applicable
+        "-Dminer_rss=false"             ; libgrss is required.
+        ;; Ensure the RUNPATH contains all installed library locations.
+        (string-append "-Dc_link_args=-Wl,-rpath="
+                       (assoc-ref %outputs "out")
+                       "/lib/tracker-miners-3.0"))
+       #:phases
+       (modify-phases %standard-phases
+         ;; The following tests rely on filesystem monitoring,
+         ;; thus requiring $HOME to be not under /tmp prefix.
+         (add-after 'unpack 'disable-failing-tests
+           (lambda _
+             (substitute* "tests/functional-tests/meson.build"
+               (("[ \t]*.*'audio/flac-musicbrainz'") "")
+               (("[ \t]*.*'audio/vorbis-musicbrainz'") "")
+               (("[ \t]*.*'disc-images/psx-game-image-1'") "")
+               (("[ \t]*'miner-basic',") "")
+               (("[ \t]*'miner-resource-removal',") "")
+               (("[ \t]*'fts-basic',") "")
+               (("[ \t]*'fts-file-operations',") "")
+               (("[ \t]*'extractor-decorator',") "")
+               (("[ \t]*'cli',") "")
+               (("[ \t]*.*'extractor-flac-cuesheet'") "")
+               (("[ \t]*'writeback-images',") "")
+               (("[ \t]*.*'writeback-audio'") ""))
+             (substitute* "tests/libtracker-miner/meson.build"
+               (("[ \t]*'file-notifier',") "")
+               (("[ \t]*'miner-fs',") ""))
+             (substitute* "examples/python/meson.build"
+               (("[ \t]*'query-async',") "")
+               (("[ \t]*'query-sync',") ""))))
+         (add-after 'unpack 'patch-docs
+           (lambda* (#:key inputs #:allow-other-keys)
+             ;; Fix asciidoc references.
+             (with-directory-excursion "docs/manpages"
+               (substitute* "meson.build"
+                 (("/etc/asciidoc/docbook-xsl/")
+                  (string-append (assoc-ref inputs "asciidoc")
+                                 "/etc/asciidoc/docbook-xsl/"))))))
+         (replace 'check
+           (lambda* (#:key tests? #:allow-other-keys)
+             (when tests?
+               ;; Tests write to $HOME.
+               (setenv "HOME" (getcwd))
+               ;; Tests look for $XDG_RUNTIME_DIR.
+               (setenv "XDG_RUNTIME_DIR" (getcwd))
+               ;; For missing '/etc/machine-id'.
+               (setenv "DBUS_FATAL_WARNINGS" "0")
+               ;; Tests require d-bus session.
+               (invoke "dbus-launch" "ninja" "test")))))))
     (native-inputs
-     `(("dbus" ,dbus)
+     `(("asciidoc" ,asciidoc)
+       ("dbus" ,dbus)
        ("intltool" ,intltool)
        ("glib:bin" ,glib "bin")
        ("gobject-introspection" ,gobject-introspection)
        ("pkg-config" ,pkg-config)
-       ("python-pygobject" ,python-pygobject)))
+       ("python-pygobject" ,python-pygobject)
+       ("python-tappy" ,python-tappy)
+       ("xsltproc" ,libxslt)))
     (inputs
      `(("exempi" ,exempi)
        ("ffmpeg" ,ffmpeg)
        ("flac" ,flac)
        ("giflib" ,giflib)
        ("glib" ,glib)
+       ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
        ("gstreamer" ,gstreamer)
        ("icu4c" ,icu4c)
        ("libcue" ,libcue)
