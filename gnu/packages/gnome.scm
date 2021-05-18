@@ -8879,7 +8879,6 @@ endpoint and it understands SPARQL. ")
        #:configure-flags
        (list
         "-Dsystemd_user_services=false" ; not applicable
-        "-Dminer_rss=false"             ; libgrss is required.
         ;; Ensure the RUNPATH contains all installed library locations.
         (string-append "-Dc_link_args=-Wl,-rpath="
                        (assoc-ref %outputs "out")
@@ -8930,7 +8929,6 @@ endpoint and it understands SPARQL. ")
                (invoke "dbus-launch" "ninja" "test")))))))
     (native-inputs
      `(("asciidoc" ,asciidoc)
-       ("dbus" ,dbus)
        ("intltool" ,intltool)
        ("glib:bin" ,glib "bin")
        ("gobject-introspection" ,gobject-introspection)
@@ -8939,22 +8937,29 @@ endpoint and it understands SPARQL. ")
        ("python-tappy" ,python-tappy)
        ("xsltproc" ,libxslt)))
     (inputs
-     `(("exempi" ,exempi)
+     `(("dbus" ,dbus)
+       ("exempi" ,exempi)
        ("ffmpeg" ,ffmpeg)
        ("flac" ,flac)
+       ("gexiv2" ,gexiv2)               ; for exiv2 support
        ("giflib" ,giflib)
        ("glib" ,glib)
        ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
        ("gstreamer" ,gstreamer)
+       ("gst-plugins-base" ,gst-plugins-base) ; for media-backend support
+       ("gupnp-dlna" ,gupnp-dlna)             ; for DLNA support
        ("icu4c" ,icu4c)
        ("libcue" ,libcue)
        ("libexif" ,libexif)
+       ("libgrss" ,libgrss)             ; for RSS data miner support
        ("libgsf" ,libgsf)
        ("libgxps" ,libgxps)
        ("libiptcdata" ,libiptcdata)
        ("libjpeg" ,libjpeg-turbo)
+       ("libnm" ,network-manager) ; for network status detection support
        ("libosinfo" ,libosinfo)
        ("libpng" ,libpng)
+       ("libraw" ,libraw)               ; for RAW format support
        ("libseccomp" ,libseccomp)
        ("libtiff" ,libtiff)
        ("libvorbis" ,libvorbis)
