@@ -4459,6 +4459,8 @@ parts of it.")
                   ;; Failed to detect CPU.
                   ((string-prefix? "armhf" system)
                    '("TARGET=ARMV7"))
+                  ((string-prefix? "riscv64" system)
+                   '("TARGET=RISCV64_GENERIC"))
                   (else '()))))
        ;; no configure script
        #:phases
