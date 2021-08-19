@@ -4595,7 +4595,9 @@ in a digital read-out.")
        ("python" ,python-2)                    ;'perf' links against libpython
        ("elfutils" ,elfutils)
        ("libiberty" ,libiberty)      ;used alongside BDF for symbol demangling
-       ("libunwind" ,libunwind)      ;better stack walking
+       ,(if (target-riscv64?)
+          `("libunwind" ,libunwind-next)
+          `("libunwind" ,libunwind))           ;better stack walking
        ("numactl" ,numactl)          ;for 'perf bench numa mem'
 
        ;; Documentation.
