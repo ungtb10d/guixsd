@@ -1771,7 +1771,7 @@ library.")
 (define-public gtkmm
   (package
     (name "gtkmm")
-    (version "3.24.4")
+    (version "4.2.0")
     (source
      (origin
        (method url-fetch)
@@ -1780,11 +1780,12 @@ library.")
                        (version-major+minor version)  "/"
                        name "-" version ".tar.xz"))
        (sha256
-        (base32 "0hv7pviln4cpjvpz7m7ga5krcsbibqzixdcn0dwzpz0cx71p3swv"))))
+        (base32 "12x9j82y37r4v0ngs22rzp4wmw7k2bbb9d3bymcczzz7y8w4q328"))))
     (build-system meson-build-system)
     (outputs '("out" "doc"))
     (arguments
-     `(#:configure-flags '("-Dbuild-documentation=true")
+     `(#:meson ,meson-0.55     ;project requires meson v0.54 or higher
+       #:configure-flags '("-Dbuild-documentation=true")
        #:phases
        (modify-phases %standard-phases
          (add-before 'check 'pre-check
@@ -1807,6 +1808,7 @@ library.")
     (native-inputs
      `(("dot" ,graphviz)
        ("doxygen" ,doxygen)
+       ("glib:bin" ,glib "bin")
        ("m4" ,m4)
        ("mm-common" ,mm-common)
        ("perl" ,perl)
@@ -1817,7 +1819,7 @@ library.")
      `(("atkmm" ,atkmm)
        ("cairomm" ,cairomm)
        ("glibmm" ,glibmm)
-       ("gtk+" ,gtk+)
+       ("gtk" ,gtk)
        ("pangomm" ,pangomm)))
     (synopsis "C++ Interfaces for GTK+ and GNOME")
     (description "GTKmm is the official C++ interface for the popular GUI
@@ -1833,6 +1835,30 @@ tutorial.")
       license:lgpl2.1+
       ;; Tools
       license:gpl2+))))
+
+(define-public gtkmm-3
+  (package
+    (inherit gtkmm)
+    (name "gtkmm")
+    (version "3.24.4")
+    (source
+     (origin
+       (method url-fetch)
+       (uri
+        (string-append "mirror://gnome/sources/" name "/"
+                       (version-major+minor version)  "/"
+                       name "-" version ".tar.xz"))
+       (sha256
+        (base32 "0hv7pviln4cpjvpz7m7ga5krcsbibqzixdcn0dwzpz0cx71p3swv"))))
+    (arguments
+     (strip-keyword-arguments
+      '(#:meson) (package-arguments gtkmm)))
+    (propagated-inputs
+     `(("atkmm-2.28" ,atkmm-2.28)
+       ("cairomm-1.13" ,cairomm-1.13)
+       ("glibmm" ,glibmm)
+       ("gtk+" ,gtk+)
+       ("pangomm-2.42" ,pangomm-2.42)))))
 
 (define-public gtkmm-2
   (package
@@ -1850,14 +1876,8 @@ tutorial.")
         (base32 "0wkbzvsx4kgw16f6xjdc1dz7f77ldngdila4yi5lw2zrgcxsb006"))))
     (build-system gnu-build-system)
     (arguments
-     (substitute-keyword-arguments (package-arguments gtkmm)
-       ((#:modules modules %gnu-build-system-modules)
-        `((srfi srfi-1)
-          ,@modules))
-       ((#:configure-flags flags)
-        `(fold delete
-               ,flags
-               '("-Dbuild-documentation=true")))))
+     (strip-keyword-arguments
+      '(#:meson #:configure-flags) (package-arguments gtkmm)))
     (propagated-inputs
      `(("atkmm" ,atkmm-2.28)
        ("cairomm" ,cairomm-1.13)
