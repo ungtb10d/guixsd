@@ -573,7 +573,8 @@ printing and other features typical of a source code editor.")
       ("shared-mime-info" ,shared-mime-info)))
    (propagated-inputs
     ;; gtksourceview-3.0.pc refers to all these.
-    `(("glib" ,glib)
+    `(("fribidi" ,fribidi)
+      ("glib" ,glib)
       ("gtk+" ,gtk+)
       ("libxml2" ,libxml2)))
    (home-page "https://wiki.gnome.org/Projects/GtkSourceView")
