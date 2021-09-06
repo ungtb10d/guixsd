@@ -548,9 +548,24 @@ printing and other features typical of a source code editor.")
               (base32
                "1hcswszqnsyqzzf5zk8iflxdvkfvvcg89pf6xsqwbyyabwdxfqyi"))))
    (build-system meson-build-system)
+   (outputs '("out" "doc"))
    (arguments
-    '(#:phases
+    `(#:configure-flags
+      (list
+       ,@(if (%current-target-system)
+             ;; If true, gtkdoc-scangobj will try to execute a
+             ;; cross-compiled binary.
+             '("-Dgtk_doc=false")
+             '("-Dgtk_doc=true")))
+      #:phases
       (modify-phases %standard-phases
+        (add-after 'unpack 'patch-docbook-xml
+          (lambda* (#:key inputs native-inputs outputs #:allow-other-keys)
+            (substitute* (find-files "docs" "\\.xml\\.in$")
+              (("http://www.oasis-open.org/docbook/xml/4.3/")
+               (string-append
+                (assoc-ref (or native-inputs inputs) "docbook-xml-4.3")
+                "/xml/dtd/docbook/")))))
         (add-before
          'check 'pre-check
          (lambda* (#:key inputs #:allow-other-keys)
@@ -560,12 +575,24 @@ printing and other features typical of a source code editor.")
              (setenv "DISPLAY" ":1")
              ;; For the missing /etc/machine-id.
              (setenv "DBUS_FATAL_WARNINGS" "0")
-             #t))))))
+             #t)))
+        (add-after 'install 'move-doc
+          (lambda* (#:key outputs #:allow-other-keys)
+            (let* ((out (assoc-ref outputs "out"))
+                   (doc (assoc-ref outputs "doc")))
+              (mkdir-p (string-append doc "/share/gtk-doc"))
+              (rename-file
+               (string-append out "/share/gtk-doc")
+               (string-append doc "/share/gtk-doc"))))))))
    (native-inputs
-    `(("glib:bin" ,glib "bin") ; for glib-genmarshal, etc.
+    `(("docbook-xml-4.3" ,docbook-xml-4.3)
+      ("docbook-xsl" ,docbook-xsl)
+      ("glib:bin" ,glib "bin") ; for glib-genmarshal, etc.
+      ("gtk-doc" ,gtk-doc)
       ("intltool" ,intltool)
       ("itstool" ,itstool)
       ("gobject-introspection" ,gobject-introspection)
+      ("libxslt" ,libxslt)
       ("pkg-config" ,pkg-config)
       ("vala" ,vala)
       ;; For testing.
