@@ -1964,14 +1964,12 @@ tutorial.")
      `(("glibmm" ,glibmm-2.64)
        ("gtkmm" ,gtkmm-3)
        ("gtksourceview-3" ,gtksourceview-3)))
-    (synopsis "C++ interface to the GTK+ 'GtkTextView' widget")
-    (description
-     "gtksourceviewmm is a portable C++ library that extends the standard GTK+
-framework for multiline text editing with support for configurable syntax
-highlighting, unlimited undo/redo, search and replace, a completion framework,
-printing and other features typical of a source code editor.")
+    (synopsis "C++ binding for GtkSourceView")
+    (description "GtkSourceViewmm is a C++ wrapper for the gtksourceview
+widget library.  It offers all the power of gtksourceview with an interface
+familiar to C++ developers, including users of the gtkmm library.")
     (license license:lgpl2.1+)
-    (home-page "https://developer.gnome.org/gtksourceview/")))
+    (home-page "https://wiki.gnome.org/Projects/GtkSourceView")))
 
 ;;;
 ;;; Python bindings.
