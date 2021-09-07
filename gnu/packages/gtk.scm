@@ -1957,8 +1957,24 @@ tutorial.")
               (sha256
                (base32 "1danc9mp5mnb65j01qxkwj92z8jf1gns41wbgp17qh7050f0pc6v"))))
     (build-system gnu-build-system)
+    (outputs '("out" "doc"))
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+         (add-after 'install 'move-doc
+           (lambda* (#:key outputs #:allow-other-keys)
+             (let* ((out (assoc-ref outputs "out"))
+                    (doc (assoc-ref outputs "doc")))
+               (mkdir-p (string-append doc "/share"))
+               (rename-file
+                (string-append out "/share/doc")
+                (string-append doc "/share/doc"))))))))
     (native-inputs
-     `(("pkg-config" ,pkg-config)))
+     `(("doxygen" ,doxygen)
+       ("graphviz" ,graphviz) ;provides dot
+       ("libxslt" ,libxslt)
+       ("perl" ,perl)
+       ("pkg-config" ,pkg-config)))
     (propagated-inputs
      ;; In 'Requires' of gtksourceviewmm-3.0.pc.
      `(("glibmm" ,glibmm-2.64)
