@@ -377,21 +377,18 @@ functions for strings and common data structures.")
 (define gobject-introspection
   (package
     (name "gobject-introspection")
-    (version "1.62.0")
-    (source
-     (origin
-       (method url-fetch)
-       (uri
-        (string-append "mirror://gnome/sources/"
-                       "gobject-introspection/" (version-major+minor version)
-                       "/gobject-introspection-" version ".tar.xz"))
-       (sha256
-        (base32 "18lhglg9v6y83lhqzyifc1z0wrlawzrhzzxx0a3h1g7xaz97xvmi"))
-       (patches
-        (search-patches
-         "gobject-introspection-cc.patch"
-         "gobject-introspection-girepository.patch"
-         "gobject-introspection-absolute-shlib-path.patch"))))
+    (version "1.68.0")
+    (source (origin
+             (method url-fetch)
+             (uri (string-append "mirror://gnome/sources/"
+                   "gobject-introspection/" (version-major+minor version)
+                   "/gobject-introspection-" version ".tar.xz"))
+             (sha256
+              (base32 "09sawnv3xj9pzgy2qrrk87dl3jibfphnswb61i5bh0d2h4j28afj"))
+             (patches (search-patches
+                       "gobject-introspection-cc.patch"
+                       "gobject-introspection-girepository.patch"
+                       "gobject-introspection-absolute-shlib-path.patch"))))
     (build-system meson-build-system)
     (arguments
      `(#:phases
