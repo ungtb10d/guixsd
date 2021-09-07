@@ -1948,22 +1948,22 @@ tutorial.")
 (define-public gtksourceviewmm
   (package
     (name "gtksourceviewmm")
-    (version "3.18.0")
+    (version "3.21.3")
     (source (origin
               (method url-fetch)
               (uri (string-append "mirror://gnome/sources/" name "/"
                                   (version-major+minor version)  "/"
                                   name "-" version ".tar.xz"))
               (sha256
-               (base32 "0fgvmhm4h4qmxig87qvangs6ijw53mi40siz7pixlxbrsgiil22i"))))
+               (base32 "1danc9mp5mnb65j01qxkwj92z8jf1gns41wbgp17qh7050f0pc6v"))))
     (build-system gnu-build-system)
     (native-inputs
      `(("pkg-config" ,pkg-config)))
     (propagated-inputs
      ;; In 'Requires' of gtksourceviewmm-3.0.pc.
-     `(("glibmm" ,glibmm)
-       ("gtkmm" ,gtkmm)
-       ("gtksourceview" ,gtksourceview-3)))
+     `(("glibmm" ,glibmm-2.64)
+       ("gtkmm" ,gtkmm-3)
+       ("gtksourceview-3" ,gtksourceview-3)))
     (synopsis "C++ interface to the GTK+ 'GtkTextView' widget")
     (description
      "gtksourceviewmm is a portable C++ library that extends the standard GTK+
