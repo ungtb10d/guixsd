@@ -917,6 +917,8 @@ shared library and encoder and decoder command-line executables.")
       (native-inputs
        `(("pkg-config" ,pkg-config)
          ("nasm" ,nasm)))
+      (inputs
+       `(("config" ,config)))
       ;; TODO: Add gpac input
       (arguments
        `(#:tests? #f                    ;no check target
@@ -927,6 +929,7 @@ shared library and encoder and decoder command-line executables.")
                              ;; program depends on ffmpeg and ffmpeg depends on
                              ;; libx264).
                              "--disable-cli"
+                             "--enable-pic"
 
                              ;; On MIPS, we must pass "--disable-asm" or else
                              ;; configure fails after printing: "You specified a
@@ -937,7 +940,17 @@ shared library and encoder and decoder command-line executables.")
                                                    (or (%current-target-system)
                                                        (%current-system)))
                                    '("--disable-asm")
-                                   '()))))
+                                   '()))
+         #:phases
+         (modify-phases %standard-phases
+           (add-after 'unpack 'update-config-scripts
+             (lambda* (#:key native-inputs inputs #:allow-other-keys)
+               (for-each (lambda (file)
+                               (install-file
+                                 (search-input-file
+                                   (or native-inputs inputs)
+                                   (string-append "/bin/" file)) "."))
+                         '("config.guess" "config.sub")))))))
       (home-page "https://www.videolan.org/developers/x264.html")
       (synopsis "H.264 video coding library")
       (description "libx264 is an advanced encoding library for creating
