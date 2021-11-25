@@ -153,6 +153,7 @@
   #:use-module (gnu packages protobuf)
   #:use-module (gnu packages pulseaudio) ;libsndfile
   #:use-module (gnu packages python)
+  #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-check)
   #:use-module (gnu packages python-compression)
   #:use-module (gnu packages python-web)
@@ -3643,6 +3644,8 @@ streams on an individual packet/page level.")
     (build-system python-build-system)
     (propagated-inputs
      (list python-mutagen python-six))
+    (native-inputs
+     (list python-flit-core python-nose))
     (home-page "https://github.com/beetbox/mediafile")
     (synopsis "Read and write audio file tags")
     (description
