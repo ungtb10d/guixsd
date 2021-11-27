@@ -25022,8 +25022,10 @@ scripts to load entry points more quickly.")
        (sha256
         (base32 "0ama5w5lswxlp3l4qfqq3zlg7i6qkw45jfl1f7p8w1vnj8m47yz6"))))
     (build-system python-build-system)
+    (native-inputs (list python-nose python-poetry-core))
     (arguments
-     `(#:tests? #f))              ; no tests in PyPI and no setup.py in GitHub
+     `(#:build-backend "poetry.core.masonry.api"
+       #:tests? #f))              ; no tests in PyPI and no setup.py in GitHub
     (home-page "https://github.com/vlasovskikh/funcparserlib")
     (synopsis
      "Recursive descent parsing library based on functional combinators")
