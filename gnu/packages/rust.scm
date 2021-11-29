@@ -30,6 +30,7 @@
 
 (define-module (gnu packages rust)
   #:use-module (gnu packages base)
+  #:use-module (gnu packages bash)
   #:use-module (gnu packages bison)
   #:use-module (gnu packages bootstrap)
   #:use-module (gnu packages cmake)
@@ -102,20 +103,27 @@
   (string-append "https://" dist ".rust-lang.org/dist/"
                  "rustc-" version "-src.tar.gz"))
 
-(define* (rust-bootstrapped-package base-rust version checksum)
-  "Bootstrap rust VERSION with source checksum CHECKSUM using BASE-RUST."
-  (package
-    (inherit base-rust)
-    (version version)
-    (source
-     (origin
-       (inherit (package-source base-rust))
-       (uri (rust-uri version))
-       (sha256 (base32 checksum))))
-    (native-inputs
-     (alist-replace "cargo-bootstrap" (list base-rust "cargo")
-                    (alist-replace "rustc-bootstrap" (list base-rust)
-                                   (package-native-inputs base-rust))))))
+(define* (rust-bootstrapped-package base-rust
+                                    #:optional
+                                    (version (package-version base-rust))
+                                    checksum)
+  "Bootstrap rust VERSION with source checksum CHECKSUM using BASE-RUST.  When
+CHECKSUM is omitted, the source of BASE-RUST is reused."
+  (let ((base-source (package-source base-rust)))
+    (package
+      (inherit base-rust)
+      (version version)
+      (source
+       (if checksum
+           (origin
+             (inherit base-source)
+             (uri (rust-uri version))
+             (sha256 (base32 checksum)))
+           base-source))
+      (native-inputs
+       (alist-replace "cargo-bootstrap" (list base-rust "cargo")
+                      (alist-replace "rustc-bootstrap" (list base-rust)
+                                     (package-native-inputs base-rust)))))))
 
 ;;; Note: mrustc's only purpose is to be able to bootstap Rust; it's designed
 ;;; to be used in source form.  The latest support for bootstrapping from
@@ -776,3 +784,144 @@ safety and thread safety guarantees.")
 ;;; be relied upon.  This is to ease maintenance and reduce the time
 ;;; required to build the full Rust bootstrap chain.
 (define-public rust rust-1.54)
+
+;;; Rust cross-built for i686-linux.
+;;; TODO: Build statically.
+;;; TODO: Make a procedure of it that returns a cross-built rust package.
+(define-public rust-i686-linux-cross
+  (let* ((base-rust (rust-bootstrapped-package rust-x86-64-linux))
+         (base-source (package-source base-rust)))
+    (package/inherit base-rust
+      (source (origin
+                (inherit base-source)
+                (patches (append (search-patches
+                                  "rust-per-target-default-linker.patch")
+                             (origin-patches base-source)))))
+      (name "rust-i686-linux-cross")
+      (outputs '("out"))
+      (arguments
+       (substitute-keyword-arguments (package-arguments base-rust)
+         ((#:target _ #f) "i686-linux-gnu")
+         ((#:tests? _ #f) #f)           ;cannot test cross-built rust
+         ((#:phases phases)
+          `(modify-phases ,phases
+             (replace 'set-env
+               ;; Overridden to not set CC for the cross-compiler.
+               ;; TODO: Use linker option in main rust; do not set CC.
+               (lambda* (#:key inputs #:allow-other-keys)
+                 (setenv "SHELL" (which "sh"))
+                 (setenv "CONFIG_SHELL" (which "sh"))
+                 ;; The Guix LLVM package installs only shared libraries.
+                 (setenv "LLVM_LINK_SHARED" "1")))
+             ;; Delete test-related phases since we do not run tests and
+             ;; look their inputs in 'inputs' incorrectly.
+             ;; TODO: Fix rust to use (or native-inputs inputs) when looking
+             ;; for its inputs, then we can keep the patching.
+             ;; FIXME: Oops! 500 MiB of doc.  Should be installed to its own output.
+             (delete 'enable-docs)
+             (delete 'add-gdb-to-config)
+             (delete 'patch-process-tests) ;no bash in cross-compiled env
+             (replace 'configure
+               (lambda* (#:key native-inputs inputs outputs #:allow-other-keys)
+                 (let* ((out (assoc-ref outputs "out"))
+                        (binutils (assoc-ref native-inputs "cross-binutils"))
+                        (binutils-native (assoc-ref native-inputs "binutils"))
+                        (gcc (assoc-ref inputs "cross-gcc"))
+                        (gcc-native (assoc-ref native-inputs "gcc"))
+                        (llvm (assoc-ref inputs "llvm"))
+                        (llvm-native (assoc-ref native-inputs "llvm"))
+                        (python (assoc-ref native-inputs "python"))
+                        (rustc (assoc-ref native-inputs "rustc-bootstrap"))
+                        (cargo (assoc-ref native-inputs "cargo-bootstrap"))
+                        (openssl (assoc-ref inputs "openssl")))
+                   ;; pkg-config doesn't detect the libraries correctly in a
+                   ;; cross compilation setting and causes cargo to link with
+                   ;; the native libraries.  Configure the locations manually.
+                   (setenv "I686_UNKNOWN_LINUX_GNU_OPENSSL_DIR" openssl)
+                   ;; Note: jemalloc is disabled, since the JEMALLOC_OVERRIDE
+                   ;; variable necessary to have the system version used is
+                   ;; global (not per-target specific).  This is problematic
+                   ;; as rustc needs to build artifacts for both the host and
+                   ;; the target during cross-compilation.
+                   (call-with-output-file "config.toml"
+                     (lambda (port)
+                       (display (string-append "
+[llvm]
+[build]
+host = [\"i686-unknown-linux-gnu\"]
+cargo = \"" cargo "/bin/cargo" "\"
+rustc = \"" rustc "/bin/rustc" "\"
+docs = false
+python = \"" python "/bin/python" "\"
+vendor = true
+submodules = false
+[install]
+prefix = \"" out "\"
+sysconfdir = \"etc\"
+[rust]
+jemalloc=false
+channel = \"stable\"
+rpath = true
+[target." ,(nix-system->gnu-triplet-for-rust) "]
+default-linker = \"" gcc-native "/bin/gcc" "\"
+linker = \"" gcc-native "/bin/gcc" "\"
+llvm-config = \"" llvm-native "/bin/llvm-config" "\"
+cc = \"" gcc-native "/bin/gcc" "\"
+cxx = \"" gcc-native "/bin/g++" "\"
+ar = \"" binutils-native "/bin/ar" "\"
+[target.i686-unknown-linux-gnu]
+default-linker = \"" gcc "/bin/i686-linux-gnu-gcc" "\"
+linker = \"" gcc "/bin/i686-linux-gnu-gcc" "\"
+llvm-config = \"" llvm "/bin/llvm-config" "\"
+cc = \"" gcc "/bin/i686-linux-gnu-gcc" "\"
+cxx = \"" gcc "/bin/i686-linux-gnu-g++" "\"
+ar = \"" binutils "/bin/i686-linux-gnu-ar" "\"
+[dist]
+") port))))))
+             (replace 'build
+               (lambda* (#:key inputs parallel-build? #:allow-other-keys)
+                 (let ((job-spec (string-append
+                                  "-j" (if parallel-build?
+                                           (number->string (parallel-job-count))
+                                           "1"))))
+                   (invoke "./x.py" job-spec "build"
+                           "compiler/rustc"
+                           "library/std"
+                           "src/tools/cargo"))))
+             (replace 'install
+               (lambda* (#:key outputs #:allow-other-keys)
+                 (invoke "./x.py" "install")
+                 (invoke "./x.py" "install" "cargo")))
+             ;; Using ld-wrapper is problematic as it doesn't cross compile;
+             ;; the Guix-provided (in cross-gcc "lib" output) libgcc_s.so
+             ;; should also be used by the rustc-produced binaries (by adding
+             ;; it to LIBRARY_PATH?).
+             (delete 'wrap-rustc)))))
+      (native-inputs
+       `(("llvm" ,llvm-12)
+         ("openssl", openssl)
+         ("libssh2" ,libssh2)
+         ("libcurl" ,curl)
+         ,@(package-native-inputs base-rust)))
+      (inputs `(("bash" ,bash)          ;for the patch-shebangs phase
+                ,@(package-inputs base-rust)))
+      (propagated-inputs '())
+      (supported-systems '("x86_64-linux")))))
+
+;;; WIP:
+;;
+;; (define-public rust-i686-linux-bootstrap
+;;   (package/inherit rust-i686-linux-cross
+;;     (name "rust-i686-linux-bootstrap")
+;;     (source (origin
+;;               (method url-fetch)
+;;               (uri "file:///srv/")
+;;               (sha256
+;;                (base32
+;;                 ""))))
+;;     (build-system )
+;;     (synopsis "Rust bootstrap for i686-linux")
+;;     (description "Pre-built i686-linux Rust for bootstrapping purposes.")
+;;     (supported-systems '("i686-linux"))))
+
+;;; Use the above to bootstrap a rust-i686-linux package.

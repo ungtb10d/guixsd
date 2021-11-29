@@ -1,0 +1,77 @@
+diff --git a/config.toml.example b/config.toml.example
+index 4dd953a495d..fba15213f4b 100644
+--- a/config.toml.example
++++ b/config.toml.example
+@@ -488,9 +488,11 @@ changelog-seen = 2
+ # FIXME(#75760): Some UI tests fail when this option is enabled.
+ #parallel-compiler = false
+ 
+-# The default linker that will be hard-coded into the generated compiler for
+-# targets that don't specify linker explicitly in their target specifications.
+-# Note that this is not the linker used to link said compiler.
++# The default linker that will be hard-coded into the generated
++# compiler for targets that don't specify linker explicitly in their
++# target specifications.  Note that this is not the linker used to
++# link said compiler.  It can also be set per-target, which may be
++# useful for example in a cross-compilation setting.
+ #
+ # See https://doc.rust-lang.org/rustc/codegen-options/index.html#linker for more information.
+ #default-linker = <none> (path)
+diff --git a/src/bootstrap/compile.rs b/src/bootstrap/compile.rs
+index 007ca9f7f5a..8fb11d79a55 100644
+--- a/src/bootstrap/compile.rs
++++ b/src/bootstrap/compile.rs
+@@ -661,6 +661,8 @@ pub fn rustc_cargo_env(builder: &Builder<'_>, cargo: &mut Cargo, target: TargetS
+         .env("CFG_VERSION", builder.rust_version());
+ 
+     let libdir_relative = builder.config.libdir_relative().unwrap_or_else(|| Path::new("lib"));
++    let target_config = builder.config.target_config.get(&target);
++
+     cargo.env("CFG_LIBDIR_RELATIVE", libdir_relative);
+ 
+     if let Some(ref ver_date) = builder.rust_info.commit_date() {
+@@ -672,9 +674,15 @@ pub fn rustc_cargo_env(builder: &Builder<'_>, cargo: &mut Cargo, target: TargetS
+     if !builder.unstable_features() {
+         cargo.env("CFG_DISABLE_UNSTABLE_FEATURES", "1");
+     }
+-    if let Some(ref s) = builder.config.rustc_default_linker {
++
++    // Prefer the current target's own default_linker, else a globally
++    // specified one.
++    if let Some(s) = target_config.and_then(|c| c.default_linker.as_ref()) {
++        cargo.env("CFG_DEFAULT_LINKER", s);
++    } else if let Some(ref s) = builder.config.rustc_default_linker {
+         cargo.env("CFG_DEFAULT_LINKER", s);
+     }
++
+     if builder.config.rustc_parallel {
+         cargo.rustflag("--cfg=parallel_compiler");
+         cargo.rustdocflag("--cfg=parallel_compiler");
+@@ -699,7 +707,6 @@ pub fn rustc_cargo_env(builder: &Builder<'_>, cargo: &mut Cargo, target: TargetS
+         }
+         let llvm_config = builder.ensure(native::Llvm { target });
+         cargo.env("LLVM_CONFIG", &llvm_config);
+-        let target_config = builder.config.target_config.get(&target);
+         if let Some(s) = target_config.and_then(|c| c.llvm_config.as_ref()) {
+             cargo.env("CFG_LLVM_ROOT", s);
+         }
+diff --git a/src/bootstrap/config.rs b/src/bootstrap/config.rs
+index 68e20f90b7f..3475cf5075e 100644
+--- a/src/bootstrap/config.rs
++++ b/src/bootstrap/config.rs
+@@ -294,6 +294,7 @@ pub struct Target {
+     pub cxx: Option<PathBuf>,
+     pub ar: Option<PathBuf>,
+     pub ranlib: Option<PathBuf>,
++    pub default_linker: Option<PathBuf>,
+     pub linker: Option<PathBuf>,
+     pub ndk: Option<PathBuf>,
+     pub sanitizers: Option<bool>,
+@@ -531,6 +532,7 @@ struct TomlTarget {
+     cxx: Option<String>,
+     ar: Option<String>,
+     ranlib: Option<String>,
++    default_linker: Option<String>,
+     linker: Option<String>,
+     llvm_config: Option<String>,
+     llvm_filecheck: Option<String>,
