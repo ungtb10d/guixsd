@@ -566,6 +566,80 @@ languages is in development.  The compiler infrastructure includes mirror sets
 of programming tools as well as libraries with equivalent functionality.")
     (license license:asl2.0)))  ;with LLVM exceptions, see LICENSE.txt
 
+;;; TODO: Replace llvm-12 with this at the next rebuild cycle.
+(define-public llvm-next
+  (package
+    (name "llvm-next")
+    (version "12.0.1")
+    (source
+     (origin
+      (method url-fetch)
+      (uri (llvm-uri "llvm" version))
+      (sha256
+       (base32
+        "1pzx9zrmd7r3481sbhwvkms68fwhffpp4mmz45dgrkjpyl2q96kx"))))
+    (build-system cmake-build-system)
+    (outputs '("out" "opt-viewer"))
+    (native-inputs
+     `(("python" ,python-wrapper)
+       ("perl"   ,perl)))
+    (inputs
+     `(("libffi" ,libffi)))
+    (propagated-inputs
+     `(("zlib" ,zlib)))                 ;to use output from llvm-config
+    (arguments
+     `(#:configure-flags
+       ,#~(#$#~quasiquote
+           ;; These options are required for cross-compiling LLVM according to
+           ;; https://llvm.org/docs/HowToCrossCompileLLVM.html.
+           (#$@(if (%current-target-system)
+                   #~(,(string-append "-DLLVM_TABLEGEN="
+                                      #+(file-append this-package
+                                                     "/bin/llvm-tblgen"))
+                      #$(string-append "-DLLVM_DEFAULT_TARGET_TRIPLE="
+                                       (%current-target-system))
+                      #$(string-append "-DLLVM_TARGET_ARCH="
+                                       (system->llvm-target))
+                      #$(string-append "-DLLVM_TARGETS_TO_BUILD="
+                                       (system->llvm-target)))
+                   #~())
+            "-DLLVM_PARALLEL_LINK_JOBS=1" ;to lower memory requirement
+            "-DLLVM_ENABLE_FFI=ON"
+            "-DLLVM_REQUIRES_RTTI=ON"   ; For some third-party utilities
+            "-DLLVM_INSTALL_UTILS=ON"   ; Needed for rustc.
+            ;; This is the supported configuration for a shared library LLVM
+            ;; distribution (see:
+            ;; https://llvm.org/docs/BuildingADistribution.html).
+            "-DLLVM_BUILD_LLVM_DYLIB=ON"
+            "-DLLVM_LINK_LLVM_DYLIB=ON"))
+       ;; Don't use '-g' during the build, to save space.
+       #:build-type "Release"
+       #:phases
+       (modify-phases %standard-phases
+         (add-after 'install 'install-opt-viewer
+           (lambda* (#:key outputs #:allow-other-keys)
+             (let* ((out (assoc-ref outputs "out"))
+                    (opt-viewer-out (assoc-ref outputs "opt-viewer"))
+                    (opt-viewer-share-dir (string-append opt-viewer-out "/share"))
+                    (opt-viewer-dir (string-append opt-viewer-share-dir "/opt-viewer")))
+               (mkdir-p opt-viewer-share-dir)
+               (rename-file (string-append out "/share/opt-viewer")
+                            opt-viewer-dir))))
+         (add-after 'install 'delete-static-archives
+           (lambda* (#:key outputs #:allow-other-keys)
+             (let ((out (assoc-ref outputs "out")))
+               (for-each delete-file (find-files out "\\.a$"))))))))
+    (home-page "https://www.llvm.org")
+    (synopsis "Optimizing compiler infrastructure")
+    (description
+     "LLVM is a compiler infrastructure designed for compile-time, link-time,
+runtime, and idle-time optimization of programs from arbitrary programming
+languages.  It currently supports compilation of C and C++ programs, using
+front-ends derived from GCC 4.0.1.  A new front-end for the C family of
+languages is in development.  The compiler infrastructure includes mirror sets
+of programming tools as well as libraries with equivalent functionality.")
+    (license license:asl2.0)))
+
 (define-public clang-runtime-12
   (clang-runtime-from-llvm
    llvm-12
