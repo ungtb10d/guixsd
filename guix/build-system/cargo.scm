@@ -58,8 +58,11 @@ to NAME and VERSION."
 (define (default-rust)
   "Return the default Rust package."
   ;; Lazily resolve the binding to avoid a circular dependency.
-  (let ((rust (resolve-interface '(gnu packages rust))))
-    (module-ref rust 'rust)))
+  (let-system (system target)
+    (let ((rust (resolve-interface '(gnu packages rust))))
+      (if (string-prefix? "i686" (or target system))
+          (module-ref rust 'rust-i686-linux)
+          (module-ref rust 'rust-x86-64-linux)))))
 
 (define %cargo-utils-modules
   ;; Build-side modules imported by default.

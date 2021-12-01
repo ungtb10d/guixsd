@@ -54,11 +54,13 @@
   #:use-module (guix download)
   #:use-module (guix git-download)
   #:use-module ((guix licenses) #:prefix license:)
+  #:use-module (guix memoization)
   #:use-module (guix packages)
   #:use-module ((guix build utils) #:select (alist-replace))
   #:use-module (guix utils)
   #:use-module (ice-9 match)
-  #:use-module (srfi srfi-26))
+  #:use-module (srfi srfi-26)
+  #:export (rust))
 
 ;; This is the hash for the empty file, and the reason it's relevant is not
 ;; the most obvious.
@@ -780,10 +782,22 @@ safety and thread safety guarantees.")
                             (package-native-inputs base-rust))))))
 
 ;;; Note: Only the latest versions of Rust are supported and tested.  The
-;;; intermediate rusts are built for bootstrapping purposes and should not
-;;; be relied upon.  This is to ease maintenance and reduce the time
-;;; required to build the full Rust bootstrap chain.
-(define-public rust rust-1.54)
+;;; intermediate rusts are built for bootstrapping purposes and should not be
+;;; relied upon.  This is to ease maintenance and reduce the time required to
+;;; build the full Rust bootstrap chain.
+(define-public rust-x86-64-linux rust-1.54)
+
+(define rust-for-system
+  (mlambda (system)
+    "Return a rust package that can be built for SYSTEM."
+    (if (string-prefix? "i686" system)
+        rust-i686-linux
+        rust-x86-64-linux)))
+
+(define-syntax rust
+  (identifier-syntax (rust-for-system
+                      (or (%current-target-system)
+                          (%current-system)))))
 
 ;;; Rust cross-built for i686-linux.
 ;;; TODO: Build statically.
