@@ -25,8 +25,10 @@
 (define-module (gnu packages python-build)
   #:use-module (gnu packages)
   #:use-module ((guix licenses) #:prefix license:)
+  #:use-module (guix utils)
   #:use-module (guix build-system python)
   #:use-module (guix gexp)
+  #:use-module (guix build-system copy)
   #:use-module (guix download)
   #:use-module (guix git-download)
   #:use-module (guix packages)
@@ -354,31 +356,28 @@ Python file, so it can be easily copied into your project.")
         (base32 "1q8lrh9ypa6zpgbc5f7z23p7phzblp4vpxdrpfr1wajhb17w74n2"))))
     (build-system python-build-system)
     (arguments
-     `(#:tests? #f                      ;disabled to avoid extra dependencies
-       #:phases
-       (modify-phases %standard-phases
-         (replace 'build
-           (lambda _
-             (setenv "PYTHONPATH" (string-append (getcwd) ":"
-                                                 (getenv "GUIX_PYTHONPATH")))
-             (invoke "python" "-m" "build" "--wheel" "--no-isolation"
-                     "--skip-dependency-check")))
-         (replace 'install
-           (lambda* (#:key outputs #:allow-other-keys)
-             (let ((out (assoc-ref outputs "out"))
-                   (whl (car (find-files "dist" "\\.whl$"))))
-               (invoke "pip" "--no-cache-dir" "--no-input"
-                       "install" "--no-deps" "--prefix" out whl)))))))
+     `(#:tests? #f))                      ;disabled to avoid extra dependencies
     (native-inputs
-     `(("python-flit-core-bootstrap" ,python-flit-core-bootstrap)
-       ("python-pypa-build" ,python-pypa-build)
-       ("python-six", python-six-bootstrap)))
+     `(("python-flit-core" ,python-flit-core-bootstrap)))
     (home-page "https://github.com/hukkin/tomli")
     (synopsis "Small and fast TOML parser")
     (description "Tomli is a minimal TOML parser that is fully compatible with
 @url{https://toml.io/en/v1.0.0,TOML v1.0.0}.  It is about 2.4 times as fast as
 @code{python-toml}.")
     (license license:expat)))
+
+;; Bootstrap variant, which does not depend on python-build-system at
+;; all. This breaks the cycle between flit-core and tomli.
+(define-public python-tomli-bootstrap
+  (package
+    (inherit python-tomli)
+    (name "python-tomli-bootstrap")
+    (build-system copy-build-system)
+    (native-inputs '()) ; Remove native-inputs from python-tomli.
+    (arguments
+     '(#:install-plan
+       ;; XXX: Do not hard-code Python version.
+       '(("tomli" "lib/python3.9/site-packages/tomli"))))))
 
 (define-public python-pep517-bootstrap
   (hidden-package
@@ -554,51 +553,47 @@ a light weight, fully compliant, self-contained package allowing PEP 517
 compatible build front-ends to build Poetry managed projects.")
     (license license:expat)))
 
-;;; This package exists to bootstrap python-tomli.
+;; Be aware that python-flit inherits from python-flit-core and must be
+;; updated too, if you change anything here.
 (define-public python-flit-core-bootstrap
   (package
     (name "python-flit-core-bootstrap")
     (version "3.5.1")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (pypi-uri "flit" version))
-       (sha256
-        (base32 "04152qj46sqbnlrj7ch9p7svjrrlpzbk0qr39g2yr0s4f5vp6frf"))))
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/pypa/flit.git")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "106gjp7pi806labg40nbshc6gp0mva8vjibr31ybd3y9jkwfxfwl"))))
     (build-system python-build-system)
     (propagated-inputs
-     (list python-toml))
+     (list python-tomli-bootstrap))
     (arguments
-     ;; flit-core has a test suite, but it requires Pytest.  Disable it so
-     ;; as to not pull pytest as an input.
      `(#:tests? #f
+       #:build-backend "flit_core.build_thyself"
        #:phases
        (modify-phases %standard-phases
-         (replace 'build
-           ;; flit-core requires itself to build.  Luckily, a
-           ;; bootstrapping script exists, which does so using just
-           ;; the checkout sources and Python.
+         ;; python-tomli-bootstrap is not installed with metadata and triggers the sanity check.
+         (delete 'sanity-check)
+         (add-after 'unpack 'chdir
            (lambda _
-             (invoke "python" "flit_core/build_dists.py")))
-         (replace 'install
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             (let ((out (assoc-ref outputs "out"))
-                   (whl (car (find-files "." "\\.whl$"))))
-               (invoke "pip" "--no-cache-dir" "--no-input"
-                       "install" "--no-deps" "--prefix" out whl))))
-         ;; The sanity-check phase fails because flit depends on tomli at
-         ;; run-time, but this core variant avoids it to avoid a cycle.
-         (delete 'sanity-check))))
-    (home-page "https://github.com/takluyver/flit")
-    (synopsis "Core package of the Flit Python build system")
-    (description "This package provides @code{flit-core}, a PEP 517 build
+             (chdir "flit_core"))))))
+    (home-page "https://flit.readthedocs.io/")
+    (synopsis
+      "Core package of the Flit Python build system")
+    (description
+      "This package provides @code{flit-core}, a PEP 517 build
 backend for packages using Flit.  The only public interface is the API
 specified by PEP 517, @code{flit_core.buildapi}.")
     (license license:bsd-3)))
 
 (define-public python-flit-core
-  (package/inherit python-flit-core-bootstrap
+  (package
+    (inherit python-flit-core-bootstrap)
     (name "python-flit-core")
     (propagated-inputs
-     (modify-inputs (package-propagated-inputs python-flit-core-bootstrap)
-       (replace "python-toml" python-tomli)))))
+      `(("python-tomli" ,python-tomli)))))
+
