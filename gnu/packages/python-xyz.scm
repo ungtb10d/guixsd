@@ -24933,54 +24933,39 @@ the syntactic logic to configure and launch jobs in an execution environment.")
 
 (define-public python-flit
   (package
+    (inherit python-flit-core)
     (name "python-flit")
-    (version "3.5.1")
-    (source
-     (origin
-       (method url-fetch)
-       (uri (pypi-uri "flit" version))
-       (sha256
-        (base32 "04152qj46sqbnlrj7ch9p7svjrrlpzbk0qr39g2yr0s4f5vp6frf"))))
-    (build-system python-build-system)
     (arguments
-     (list
-      #:phases
-      #~(modify-phases %standard-phases
-          ;; XXX: PEP 517 manual build copied from python-isort.
-          (replace 'build
-            (lambda _
-              (invoke "python" "-m" "build" "--wheel" "--no-isolation" ".")))
-          (replace 'check
-            (lambda* (#:key tests? inputs outputs #:allow-other-keys)
-              (when tests?
-                (setenv "HOME" "/tmp")
-                (setenv "FLIT_NO_NETWORK" "1"))))
-          (replace 'install
-            (lambda _
-              (let ((whl (car (find-files "dist" "\\.whl$"))))
-                (invoke "pip" "--no-cache-dir" "--no-input"
-                        "install" "--no-deps" "--prefix" #$output whl)))))))
-    (propagated-inputs
-     (list python-pypa-build
-           python-tomli-w
-           python-flit-core
-           python-docutils
-           python-requests))
+     ;; These tests require network access.
+     `(#:test-flags '("-vv" "-k" "not test_invalid_classifier and \
+not test_install_requires and not test_install_requires_extra and \
+not test_validate_classifiers_private")
+       ,@(substitute-keyword-arguments (package-arguments python-flit-core)
+         ((#:tests? tests) #t)
+         ((#:build-backend build-backend) #f)
+         ((#:phases phases)
+           `(modify-phases ,phases
+              (add-after 'unpack 'disable-networking
+                (lambda _
+                  (setenv "FLIT_NO_NETWORK" "1")))
+              (delete 'chdir))))))
     (native-inputs
-     (list python-responses
-           python-pygments-github-lexers
-           python-pytest
-           python-pytest-cov
-           python-sphinx
-           python-sphinxcontrib-github-alt
-           python-testpath))
-    (home-page "https://flit.readthedocs.io/")
-    (synopsis "Simple packaging tool for simple packages")
-    (description "Flit is a simple way to put Python packages and modules on
-PyPI.  Flit packages a single importable module or package at a time, using
-the import name as the name on PyPI.  All subpackages and data files within a
-package are included automatically.")
-    (license license:bsd-3)))
+     `(("python-flit-core" ,python-flit-core)
+       ("python-pytest" ,python-pytest)
+       ("python-testpath" ,python-testpath)
+       ("python-responses" ,python-responses)))
+    (propagated-inputs
+     `(("python-tomli" ,python-tomli)
+       ("python-tomli-w" ,python-tomli-w)
+       ("python-requests" ,python-requests)
+       ("python-docutils" ,python-docutils)))
+    (synopsis
+     "Simple packaging tool for simple packages")
+    (description
+     "Flit is a simple way to put Python packages and modules on PyPI.  Flit
+packages a single importable module or package at a time, using the import
+name as the name on PyPI.  All subpackages and data files within a package
+are included automatically.")))
 
 (define-public python-pathtools
   (package
