@@ -3576,11 +3576,6 @@ PickleShare.")
     (arguments
      `(#:phases
        (modify-phases %standard-phases
-         (replace 'build
-           (lambda _
-             (invoke "python" "setup.py" "build" "--enable-all-extensions"
-                     "--enable=load_extension")
-             #t))
          (add-after 'build 'build-test-helper
            (lambda _
              (invoke "gcc" "-fPIC" "-shared" "-o" "./testextension.sqlext"
@@ -3588,7 +3583,6 @@ PickleShare.")
              #t))
          (replace 'check
            (lambda* (#:key inputs outputs #:allow-other-keys)
-             (add-installed-pythonpath inputs outputs)
              (invoke "python" "setup.py" "test")
              #t)))))
     (home-page "https://github.com/rogerbinns/apsw/")
