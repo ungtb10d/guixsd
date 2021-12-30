@@ -1485,8 +1485,6 @@ approximate nearest neighbor search with Python bindings.")
              (("from pyls([ \\.])" _ char)
               (string-append "from pylsp" char)))))))
     (build-system python-build-system)
-    (arguments
-     `(#:test-target "pytest"))
     (propagated-inputs
      (list python-black python-lsp-server python-tomli))
     (native-inputs
