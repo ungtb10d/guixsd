@@ -7164,7 +7164,6 @@ retrieve text and metadata from PDFs as well as merge entire files together.")
      `(#:tests? #false))                ;require python-xmp-toolkit
     (native-inputs
      (list pybind11
-           python-setuptools
            python-setuptools-scm
            python-setuptools-scm-git-archive
            python-toml
