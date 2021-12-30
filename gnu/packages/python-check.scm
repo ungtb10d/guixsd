@@ -1511,8 +1511,7 @@ libraries.")
         (base32 "09c9psfn3zigpaw1l1cmynpa3csxa49wc2ih5lzl24skdkw0njvi"))))
     (build-system python-build-system)
     (arguments
-     `(#:test-target "pytest"
-       #:phases
+     `(#:phases
        (modify-phases %standard-phases
          (add-before 'check 'set-qpa
            (lambda _
