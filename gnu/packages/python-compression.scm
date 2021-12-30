@@ -202,8 +202,7 @@ Python.")
          "0iakqgd51n1cd7r3lpdylm2rgbmd16y74cra9kcapwg84mlf9a4p"))))
     (build-system python-build-system)
     (arguments
-     `(#:test-target "check"
-       #:phases
+     `(#:phases
        (modify-phases %standard-phases
          (add-after 'unpack 'patch-setuppy
            (lambda _
@@ -216,6 +215,7 @@ Python.")
              #t)))))
     (inputs
      (list lzo))
+    (native-inputs (list python-nose))
     (home-page "https://github.com/jd-boyd/python-lzo")
     (synopsis "Python bindings for the LZO data compression library")
     (description
