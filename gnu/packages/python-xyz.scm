@@ -21298,7 +21298,7 @@ user's @file{~/Trash} directory.")
         (base32 "090krlxj7az0d9yl8i20vjrqi66dfxx7y5xakjhxzsfp7qmldnc7"))))
     (build-system python-build-system)
     (propagated-inputs
-     (list python-pathspec python-pyyaml python-setuptools))
+     (list python-pathspec python-pyyaml))
     (home-page "https://github.com/adrienverge/yamllint")
     (synopsis "Linter for YAML files")
     (description
