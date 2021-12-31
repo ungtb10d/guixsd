@@ -25954,7 +25954,6 @@ tbutils
            python-flake8
            python-hypothesis
            python-pytest
-           python-setuptools
            python-sphinx
            python-sphinx-rtd-theme
            python-testtools
