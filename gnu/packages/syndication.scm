@@ -465,14 +465,11 @@ a simple interface that makes it easy to organize and browse feeds.")
           "06xb030ibphbrz4nsxm8mh3g60ld8xfp6kc3j6vi1k4ls5s4h79i"))))
     (build-system python-build-system)
     (arguments
-     `(#:phases
+     ;; Test depends on wallclock and can be wrong.
+     `(#:test-flags '("-vv" "-k" "not test_content_humanize_timestamp")
+       #:phases
        (modify-phases %standard-phases
-         (delete 'sanity-check)         ; Tries to read environment variables.
-         (replace 'check
-           (lambda* (#:key tests? inputs outputs #:allow-other-keys)
-             (add-installed-pythonpath inputs outputs)
-             (when tests?
-               (invoke "pytest")))))))
+         (delete 'sanity-check))))         ; Tries to read environment variables.
     (inputs
      (list python-beautifulsoup4 python-decorator python-kitchen
            python-requests python-six))
