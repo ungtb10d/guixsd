@@ -9166,8 +9166,7 @@ supports @code{readline} shortcuts.")
         (base32 "1g17i356fnny4k6hjr2ayy9k77jbvd6zzmngws2kbrnvhss1wgwf"))))
     (build-system python-build-system)
     (arguments
-     `(#:test-target "pytest"
-       #:phases
+     `(#:phases
        (modify-phases %standard-phases
          (add-after 'unpack 'delete-external-test
            (lambda _
@@ -15188,8 +15187,7 @@ applications.")
         (base32 "1q9cllrwf94whr0f6mipa0hdq1rcyqvklwx19g35g2dav8f3xkjl"))))
     (build-system python-build-system)
     (arguments
-     `(#:test-target "pytest"
-       #:phases
+     `(#:phases
        (modify-phases %standard-phases
          (add-before 'check 'set-qpa
            (lambda _
@@ -27377,8 +27375,7 @@ applications and daemons.")
         (base32 "09s04aa14d8jqbh71clrb5y7vcmkxlp94mwmvzrkxahry3bk03cb"))))
     (build-system python-build-system)
     (arguments
-     `(#:test-target "pytest"
-       #:phases
+     `(#:phases
        (modify-phases %standard-phases
          ;; Tests need to read and write files.
          (add-before 'check 'make-git-checkout-writable
