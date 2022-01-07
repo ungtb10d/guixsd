@@ -18162,6 +18162,7 @@ multitouch applications.")
      (list python-coverage
            python-flake8
            python-pexpect
+           python-pip
            python-wheel
            tcsh
            fish
