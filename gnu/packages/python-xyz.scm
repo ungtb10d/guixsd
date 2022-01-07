@@ -10692,6 +10692,7 @@ plugins that intend to support Flake8 2.x and 3.x simultaneously.")
     (build-system python-build-system)
     (propagated-inputs
      (list python-flake8 python-pycodestyle python-six))
+    (native-inputs (list python-poetry-core))
     (home-page "https://github.com/jbkahn/flake8-print")
     (synopsis "Print statement checker plugin for Flake8")
     (description
