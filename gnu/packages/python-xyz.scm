@@ -11833,8 +11833,7 @@ tasks, sockets, files, locks, and queues.")
            #t))))
     (build-system python-build-system)
     (arguments
-     `(;; FIXME: python-build-system does not pass configure-flags to "build"
-       ;; or "check", so we must override the build and check phases.
+     `(#:configure-flags ,#~`(@ ("--hdf5" . #$hdf5-1.10))
        #:phases
        (modify-phases %standard-phases
          (add-after 'unpack 'use-gcc
@@ -11854,17 +11853,7 @@ tasks, sockets, files, locks, and queues.")
              (substitute* "setup.py"
                (("cpu_flags = .*")
                 "cpu_flags = ['sse2']\n"))
-             #t))
-         (replace 'build
-           (lambda* (#:key inputs #:allow-other-keys)
-             (invoke "python" "setup.py" "build"
-                     (string-append "--hdf5="
-                                    (assoc-ref inputs "hdf5")))))
-         (replace 'check
-           (lambda* (#:key inputs #:allow-other-keys)
-             (invoke "python" "setup.py" "check"
-                     (string-append "--hdf5="
-                                    (assoc-ref inputs "hdf5"))))))))
+             #t)))))
     (propagated-inputs
      (list python-numexpr python-numpy))
     (native-inputs
