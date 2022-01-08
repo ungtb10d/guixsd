@@ -2182,7 +2182,7 @@ orienteering sport.")
                     ((guix build python-build-system) #:prefix python:)
                     (guix build utils))
          #:imported-modules (,@%gnu-build-system-modules
-                             (guix build python-build-system))
+                             ,@%python-build-system-modules)
          #:phases
          (modify-phases %standard-phases
            (replace 'configure
@@ -2309,7 +2309,7 @@ growing set of geoscientific methods.")
                   (guix build qt-utils)
                   (guix build utils))
        #:imported-modules (,@%cmake-build-system-modules
-                           (guix build python-build-system)
+                           ,@%python-build-system-modules
                            (guix build qt-utils))
        #:configure-flags
        '("-DWITH_QTWEBKIT=NO")

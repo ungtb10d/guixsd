@@ -3412,7 +3412,7 @@ and targeted primarily for asynchronous processing of HTTP-requests.")
     (build-system gnu-build-system)
     (arguments
      (list
-      #:imported-modules `((guix build python-build-system) ;for site-packages
+      #:imported-modules `(,@%python-build-system-modules ;for site-packages
                            ,@%gnu-build-system-modules)
       #:modules '(((guix build python-build-system) #:prefix python:)
                   (guix build gnu-build-system)

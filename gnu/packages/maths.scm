@@ -1953,7 +1953,7 @@ interfaces.")
      `(("python" ,python-wrapper)
        ("python-cython" ,python-cython)))
     (arguments
-     `(#:imported-modules ((guix build python-build-system)
+     `(#:imported-modules (,@%python-build-system-modules
                            ,@%cmake-build-system-modules)
        #:modules (((guix build python-build-system)
                    #:select (python-version site-packages))
@@ -2853,7 +2853,7 @@ This is the certified version of the Open Cascade Technology (OCCT) library.")
                            "-DENABLE_BUILD_SHARED:BOOL=ON"
                            "-DENABLE_BUILD_DYNAMIC:BOOL=ON")
        #:imported-modules (,@%cmake-build-system-modules
-                           (guix build python-build-system))
+                           ,@%python-build-system-modules)
        #:modules (((guix build python-build-system) #:select (site-packages))
                   (guix build cmake-build-system)
                   (guix build utils))
@@ -5710,7 +5710,7 @@ as equations, scalars, vectors, and matrices.")
                 "1hnbzq10d23drd7ksm3c1n2611c3kd0q0yxgz8y78zaafwczvwxx"))))
     (build-system gnu-build-system)
     (arguments
-     `(#:imported-modules ((guix build python-build-system)
+     `(#:imported-modules (,@%python-build-system-modules
                            ,@%gnu-build-system-modules)
        #:modules (((guix build python-build-system) #:select (site-packages))
                   (guix build gnu-build-system)
@@ -5765,7 +5765,7 @@ theories} (SMT) solver.  It provides a C/C++ API, as well as Python bindings.")
     (inherit z3)
     (name "ocaml-z3")
     (arguments
-     `(#:imported-modules ((guix build python-build-system)
+     `(#:imported-modules (,@%python-build-system-modules
                            ,@%gnu-build-system-modules)
        #:modules (((guix build python-build-system) #:select (site-packages))
                   (guix build gnu-build-system)
@@ -7333,7 +7333,7 @@ when an application performs repeated divisions by the same divisor.")
                 (patches (search-patches "fp16-system-libraries.patch"))))
       (build-system cmake-build-system)
       (arguments
-       `(#:imported-modules ((guix build python-build-system)
+       `(#:imported-modules (,@%python-build-system-modules
                              ,@%cmake-build-system-modules)
          #:modules (((guix build python-build-system)
                      #:select (site-packages))
@@ -7405,7 +7405,7 @@ half-precision floating point formats.")
            #t))))
     (build-system cmake-build-system)
     (arguments
-     `(#:imported-modules ((guix build python-build-system)
+     `(#:imported-modules (,@%python-build-system-modules
                            ,@%cmake-build-system-modules)
        #:modules (((guix build python-build-system) #:select
                    (python-version))

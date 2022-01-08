@@ -1198,7 +1198,7 @@ formats (e.g. Bibtex, RIS, ...) using a common XML intermediate.")
        #:parallel-build? #f             ;occasionally failed.
        #:imported-modules
        (,@%cmake-build-system-modules
-        (guix build python-build-system))
+        ,@%python-build-system-modules)
        #:modules ((guix build cmake-build-system)
                   ((guix build python-build-system) #:prefix python:)
                   (guix build utils))

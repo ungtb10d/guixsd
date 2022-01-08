@@ -2941,7 +2941,7 @@ database is translated at Transifex.")
     (build-system glib-or-gtk-build-system)
     (arguments
      (list
-      #:imported-modules `((guix build python-build-system)
+      #:imported-modules `(,@%python-build-system-modules
                            ,@%glib-or-gtk-build-system-modules)
       #:phases
       #~(modify-phases %standard-phases
@@ -9935,7 +9935,7 @@ existing databases over the internet.")
      `(#:glib-or-gtk? #t
        #:configure-flags '("-Dlocalstatedir=/tmp"
                            "-Dsysconfdir=/tmp")
-       #:imported-modules ((guix build python-build-system)
+       #:imported-modules (,@%python-build-system-modules
                            ,@%meson-build-system-modules)
        #:phases
        (modify-phases %standard-phases
@@ -10629,7 +10629,7 @@ views can be printed as PDF or PostScript files, or exported to HTML.")
     (arguments
      `(#:imported-modules
        (,@%meson-build-system-modules
-        (guix build python-build-system))
+        ,@%python-build-system-modules)
        #:modules
        ((guix build meson-build-system)
         ((guix build python-build-system) #:prefix python:)
@@ -10889,7 +10889,7 @@ mp3, Ogg Vorbis and FLAC")
         (base32 "1jv8m82hi23ilrgdznlc1jhp2jm8bw1yrw0chh3qw2l0sixvkl11"))))
     (build-system glib-or-gtk-build-system)
     (arguments
-     `(#:imported-modules ((guix build python-build-system)
+     `(#:imported-modules (,@%python-build-system-modules
                            (guix build glib-or-gtk-build-system)
                            ,@%gnu-build-system-modules)
 
@@ -12133,7 +12133,7 @@ your operating-system definition:
            python-pycairo
            python-pygobject))
     (arguments
-     `(#:imported-modules ((guix build python-build-system)
+     `(#:imported-modules (,@%python-build-system-modules
                            ,@%meson-build-system-modules)
        #:modules (((guix build python-build-system) #:prefix python:)
                   (guix build meson-build-system)
