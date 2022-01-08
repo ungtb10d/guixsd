@@ -128,6 +128,7 @@
   #:use-module (gnu packages popt)
   #:use-module (gnu packages protobuf)
   #:use-module (gnu packages python)
+  #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-check)
   #:use-module (gnu packages python-crypto)
   #:use-module (gnu packages python-science)
@@ -2954,7 +2955,7 @@ with Python's asyncio framework.")
         (sha256
           (base32 "19p81jd4w7m7v2x1jdrwibp67wzqx1a7rdw5n4qqmch3iffp97vn"))))
     (build-system python-build-system)
-    (native-inputs (list python-cython))
+    (native-inputs (list python-cython python-poetry-core))
     (home-page "https://github.com/long2ice/asyncmy")
     (synopsis "Fast MySQL driver for Python")
     (description "@code{asyncmy} is a fast @code{asyncio} MySQL driver, which
