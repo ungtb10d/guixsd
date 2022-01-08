@@ -472,24 +472,8 @@ are too large to conveniently hard-code them in the tests.")
        (sha256
         (base32 "0j1lvlj3ps975q9hmg8i6rpqm0313j3r18bc3l8mz6khb7vav4zk"))))
     (build-system python-build-system)
-    (arguments
-     '(#:phases
-       (modify-phases %standard-phases
-         (replace 'check
-           (lambda* (#:key inputs outputs tests? #:allow-other-keys)
-             ;; Make the installed plugin discoverable by Pytest.
-             (when tests?
-               (add-installed-pythonpath inputs outputs)
-               (invoke "python" "-m" "pytest" "-k"
-                       (string-append   ; skip tests that require remote data
-                        "not test_remote_data_url"
-                        " and not test_remote_data_float_cmp"
-                        " and not test_remote_data_ignore_whitespace"
-                        " and not test_remote_data_ellipsis"
-                        " and not test_remote_data_requires"
-                        " and not test_remote_data_ignore_warnings"))))))))
     (native-inputs
-     (list python-pytest python-setuptools-scm))
+     (list python-pytest python-pip))
     (home-page "https://github.com/astropy/pytest-doctestplus")
     (synopsis "Pytest plugin with advanced doctest features")
     (description
