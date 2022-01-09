@@ -22934,27 +22934,12 @@ N-dimensional arrays for Python.")
          "0v7npqrg1rdm8jzw22a45c0mqrmsv05r3k88i3lhzi0pzzxca1i1"))))
     (build-system python-build-system)
     (arguments
-     `(#:phases
+     `(#:test-flags '("-vv" "-k" "not concatenation.rst") ; needs python-scanpy.
+       #:phases
        (modify-phases %standard-phases
-         (delete 'check)
-         (replace 'build
+         (add-before 'build 'set-version
            (lambda _
-             (setenv "SETUPTOOLS_SCM_PRETEND_VERSION" ,version)
-             (substitute* "anndata/_metadata.py"
-               (("__version__ =.*")
-                (string-append "__version__ = \"" ,version "\"\n")))
-             ;; ZIP does not support timestamps before 1980.
-             (setenv "SOURCE_DATE_EPOCH" "315532800")
-             (invoke "flit" "build")))
-         (replace 'install
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             (add-installed-pythonpath inputs outputs)
-             (let ((out (assoc-ref outputs "out")))
-               (for-each (lambda (wheel)
-                           (format #true wheel)
-                           (invoke "python" "-m" "pip" "install"
-                                   wheel (string-append "--prefix=" out)))
-                         (find-files "dist" "\\.whl$"))))))))
+             (setenv "SETUPTOOLS_SCM_PRETEND_VERSION" ,version))))))
     (propagated-inputs
      (list python-h5py
            python-importlib-metadata
@@ -22966,8 +22951,10 @@ N-dimensional arrays for Python.")
            python-xlrd-1
            python-zarr))
     (native-inputs
-     (list python-joblib python-pytest python-toml python-flit
-           python-setuptools-scm))
+     ;; Missing: python-scanpy, which is part of bioinformatics module,
+     ;; which cannot be imported here.
+     (list python-joblib python-pytest python-toml python-flit-core
+           python-setuptools-scm python-boltons))
     (home-page "https://github.com/theislab/anndata")
     (synopsis "Annotated data for data analysis pipelines")
     (description "Anndata is a package for simple (functional) high-level APIs
