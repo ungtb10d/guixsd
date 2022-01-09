@@ -23188,7 +23188,8 @@ pure-Python.")
          "1584d21d4rcpryn8yfz0pjnjprk4zm367m0razdcz8cjbsh0dxp6"))))
     (build-system python-build-system)
     (arguments
-     '(#:phases
+     '(#:tests? #f
+       #:phases
        (modify-phases %standard-phases
          (add-after 'unpack 'chdir
            (lambda _ (chdir "tests/cloudpickle_testpkg"))))))
@@ -23207,14 +23208,7 @@ data.")
     (inherit python-cloudpickle-testpkg)
     (name "python-cloudpickle")
     (build-system python-build-system)
-    (arguments
-     '(#:phases
-       (modify-phases %standard-phases
-         (replace 'check
-           (lambda* (#:key tests? #:allow-other-keys)
-             (if tests?
-                 (invoke "pytest" "-s" "-vv")
-                 (format #t "test suite not run~%")))))))
+    (arguments '( ))
     (native-inputs
      (list ;; For tests.
            python-cloudpickle-testpkg python-psutil python-pytest
