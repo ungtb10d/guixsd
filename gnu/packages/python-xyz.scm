@@ -23411,6 +23411,7 @@ run on top of the dynamic task schedulers.")
         (base32
          "0nrw4sr3afldrp7073hvc0rgdz282s0l819jdmj1i6nn05v33h0l"))))
     (build-system python-build-system)
+    (arguments `(#:tests? #f)) ; No tests.
     (native-inputs (list python-pytest))
     (inputs (list python))
     (home-page "https://github.com/luther9/ilinkedlist-py")
