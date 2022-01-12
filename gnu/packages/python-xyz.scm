@@ -27252,7 +27252,7 @@ distribution in Python.")
     (propagated-inputs
      (list python-importlib-metadata))
     (native-inputs
-     (list python-pytest))
+     (list python-pytest python-pip))
     (home-page "https://gitlab.com/dpizetta/helpdev")
     (synopsis
      "Extract information about the Python environment easily")
