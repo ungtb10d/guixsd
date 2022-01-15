@@ -156,24 +156,8 @@ more.")
                 "06qvwmiw2klk3bg8g5af0ppjwrm9kzy4595w5d06qh2v3gq0svbk"))))
     (build-system python-build-system)
     (arguments
-     (list
-      #:phases
-      #~(modify-phases %standard-phases
-          (add-after 'unpack 'specify-libigraph-location
-            (lambda _
-              (let ((igraph #$(this-package-input "igraph")))
-                (substitute* "setup.py"
-                  (("(LIBIGRAPH_FALLBACK_INCLUDE_DIRS = ).*" _ var)
-                   (string-append
-                    var (format #f "[~s]~%" (string-append igraph
-                                                           "/include/igraph"))))
-                  (("(LIBIGRAPH_FALLBACK_LIBRARY_DIRS = ).*" _ var)
-                   (string-append
-                    var (format #f "[~s]~%" (string-append igraph "/lib"))))))))
-          (replace 'check
-            (lambda* (#:key tests? #:allow-other-keys)
-              (when tests?
-                (invoke "pytest" "-v")))))))
+     `(#:configure-flags
+       `(@ ("--global-option" . ,(list "--use-pkg-config")))))
     (inputs
      (list igraph))
     (propagated-inputs
