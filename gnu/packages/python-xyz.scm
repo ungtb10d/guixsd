@@ -12300,27 +12300,17 @@ specification.")
         (base32 "1r0kgl7i6nnhgjl44sjw57k08gh2qr7l8slqih550dyxbf1akbxh"))))
     (build-system python-build-system)
     (arguments
-     '(#:phases
+     `(#:test-flags '("-vv" "sasstests.py")
+       #:phases
        (modify-phases %standard-phases
+         (add-after 'unpack 'ignore-tests
+           (lambda _
+             (substitute* "setup.py" (("'sasstests'") ""))))
          ;; Use Guix package of libsass instead of compiling from a checkout.
          (add-before 'build 'set-libsass
-           (lambda _ (setenv "SYSTEM_SASS" "indeed")))
-         (replace 'check
-           (lambda* (#:key tests? #:allow-other-keys)
-             (when tests?
-               (invoke "pytest" "sasstests.py"))))
-         (add-after 'install 'delete-test
-           (lambda* (#:key inputs outputs #:allow-other-keys)
-             ;; Delete sasstests.py because it attempts to open a file
-             ;; that is not installed when loaded, which breaks the sanity
-             ;; check.
-             (delete-file (string-append
-                           (assoc-ref outputs "out")
-                           "/lib/python"
-                           (python-version
-                            (dirname (dirname
-                                      (search-input-file inputs "bin/python"))))
-                           "/site-packages/sasstests.py")))))))
+           (lambda _
+             (setenv "SYSTEM_SASS" (assoc-ref %build-inputs "libsass"))
+             #t)))))
     (native-inputs
      (list python-pytest python-werkzeug))
     (inputs
