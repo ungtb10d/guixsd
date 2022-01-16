@@ -551,6 +551,7 @@ functionality such as HTML output.")
         (base32
          "02ar6yjazlxq4p64cz9gag08bvakmzjrp147jara9wlnlbc96j8g"))))
     (build-system python-build-system)
+    (arguments `(#:tests? #f)) ; No tests.
     (home-page "https://eriwen.github.io/lcov-to-cobertura-xml/")
     (synopsis "LCOV to Cobertura XML converter")
     (description
