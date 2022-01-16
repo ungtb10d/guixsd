@@ -223,12 +223,22 @@ the JupyterLab CSS variables.")
         (base32
          "0r015c0m713d19asmpimsw6bk2sqv2lpd2nccgjzjdj5h1crg0bg"))))
     (build-system python-build-system)
+    (arguments `(#:test-flags `("-vv" "-k" ,(string-append
+                                      ;; These try to fetch packages via pip.
+                                      "not test_install_missing "
+                                      "and not test_install_hybrid "
+                                      "and not test_install "
+                                      "and not test_develop "
+                                      "and not test_build_package "
+                                      "and not test_deprecated_metadata "
+                                      ;; Tries to write to site-packages.
+                                      "and not test_create_cmdclass"))))
     (propagated-inputs
      (list python-deprecation python-packaging python-setuptools
            python-tomlkit python-wheel))
     (native-inputs
      (list python-pypa-build python-coverage python-pytest
-           python-pytest-cov python-pytest-mock))
+           python-pytest-cov python-pytest-mock python-pip))
     (home-page "https://jupyter.org")
     (synopsis "Jupyter packaging utilities")
     (description "This package provides tools to help build and install
