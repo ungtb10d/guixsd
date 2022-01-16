@@ -27621,6 +27621,7 @@ Screenflick.")
           (base32
             "0vikx7v6fbvww6kfrv0k5a24jyv3ak7nindg60906pdd1m9qvkcw"))))
     (build-system python-build-system)
+    (arguments `(#:tests? #f)) ; No tests.
     (propagated-inputs
       (list python-jinja2))
     (native-inputs
