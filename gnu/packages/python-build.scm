@@ -508,7 +508,8 @@ information.")
     (build-system python-build-system)
     (arguments
      `(#:tests? #f))
-    (inputs
+    ;; Propagated, because it is also possible to use `python -m build`.
+    (propagated-inputs
      `(("python-pep517", python-pep517-bootstrap)
        ("python-tomli" ,python-tomli)
        ("python-packaging" ,python-packaging-bootstrap)))
