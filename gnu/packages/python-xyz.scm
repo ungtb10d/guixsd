@@ -5153,7 +5153,7 @@ which can produce feeds in RSS 2.0, RSS 0.91, and Atom formats.")
          "1gb0fsamxndhplx25v8m0b3k7aknzy454fpa0qsqsqnv6c3igv3v"))))
     (build-system python-build-system)
     (native-inputs
-     (list python-mock python-pytest))
+     (list python-mock python-pytest python-pytest-cov))
     (propagated-inputs
      (list python-ujson))
     (home-page "https://github.com/python-lsp/python-lsp-jsonrpc")
