@@ -572,6 +572,7 @@ during long operations.")
        (sha256
         (base32 "106akalywfmnypzkdrhgz4n4740a8xayspybsw59kq06vz8i2qrc"))))
     (build-system python-build-system)
+    (arguments `(#:tests? #f)) ; Tests need unavailable test data.
     (native-inputs
      (list python-mock python-pytest))
     (propagated-inputs
