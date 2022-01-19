@@ -289,12 +289,12 @@ files and generates build instructions for the Ninja build system.")
                              (python-version (assoc-ref inputs "python")))
                             (output (assoc-ref outputs "out")))
                         (substitute* (string-append output "/bin/meson")
-                          (("# EASY-INSTALL-ENTRY-SCRIPT")
-                           (format #f "\
+                          (("#!/(.+)" all)
+                           (format #f "~a\
 import sys
 sys.path.insert(0, '~a/lib/python~a/site-packages')
-# EASY-INSTALL-ENTRY-SCRIPT"
-                                   output python-version)))))))))
+"
+                                   all output python-version)))))))))
     (inputs (list python-wrapper ninja))
     (home-page "https://mesonbuild.com/")
     (synopsis "Build system designed to be fast and user-friendly")
