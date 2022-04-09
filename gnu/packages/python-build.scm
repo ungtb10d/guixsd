@@ -282,19 +282,8 @@ Language (TOML) configuration files.")
     (build-system python-build-system)
     (arguments
      (list
-      #:tests? #f                       ;to avoid extra dependencies
-      #:phases
-      #~(modify-phases %standard-phases
-          ;; XXX: PEP 517 manual build copied from python-isort.
-          (replace 'build
-            (lambda _
-              (invoke "python" "-m" "build" "--wheel" "--no-isolation" ".")))
-          (replace 'install
-            (lambda _
-              (let ((whl (car (find-files "dist" "\\.whl$"))))
-                (invoke "pip" "--no-cache-dir" "--no-input"
-                        "install" "--no-deps" "--prefix" #$output whl)))))))
-    (native-inputs (list python-pypa-build python-flit-core))
+      #:tests? #f))                       ;to avoid extra dependencies
+    (native-inputs (list python-flit-core))
     (home-page "https://github.com/hukkin/tomli-w")
     (synopsis "Minimal TOML writer")
     (description "Tomli-W is a Python library for writing TOML.  It is a
