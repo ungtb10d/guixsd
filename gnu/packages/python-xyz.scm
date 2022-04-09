@@ -21719,19 +21719,10 @@ and other tools.")
           (add-after 'unpack 'enter-source-directory
             (lambda _
               (chdir "typing_extensions")))
-          ;; XXX: PEP 517 manual build copied from python-isort.
-          (replace 'build
-            (lambda _
-              (invoke "python" "-m" "build" "--wheel" "--no-isolation" ".")))
           (replace 'check
             (lambda* (#:key tests? #:allow-other-keys)
               (when tests?
-                (invoke "python" "src/test_typing_extensions.py"))))
-          (replace 'install
-            (lambda _
-              (let ((whl (car (find-files "dist" "\\.whl$"))))
-                (invoke "pip" "--no-cache-dir" "--no-input"
-                        "install" "--no-deps" "--prefix" #$output whl)))))))
+                (invoke "python" "src/test_typing_extensions.py")))))))
     (native-inputs (list python-pypa-build python-flit-core))
     (home-page "https://github.com/python/typing/typing_extensions")
     (synopsis "Experimental type hints for Python")
