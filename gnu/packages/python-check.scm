@@ -1285,6 +1285,7 @@ new fixtures, new methods and new comparison objects.")
         (base32
          "0kx4mbs9bflycd8x9af0idcjhdgnzri3nw1qb0vpfyb3751qaaf9"))))
     (build-system python-build-system)
+    (arguments `(#:tests? #f)) ; No tests in PyPi tarball.
     (native-inputs
      (list python-pytest))
     (propagated-inputs
