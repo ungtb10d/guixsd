@@ -247,6 +247,7 @@ datetime module, available in Python 2.3+.")
         (base32
          "0mfl0ixshqkwx7z5siaib7ix5j2iahb1jqfpyhqp42wan7xnicsc"))))
     (build-system python-build-system)
+    (arguments `(#:test-backend 'nose))
     (native-inputs
      (list python-nose python-pyicu python-pytest python-pytest-runner))
     (propagated-inputs
