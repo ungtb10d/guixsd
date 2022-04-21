@@ -10889,8 +10889,13 @@ Python.")
         (base32
          "0jbs73nincha8fkfxx267sfxac6pl0ckszjbqbb8gk4dhs8v9d9i"))))
     (build-system python-build-system)
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+         (replace 'check
+           (lambda _ (invoke "python" "-m" "unittest" "discover"))))))
     (native-inputs
-     (list python-nose python-pyyaml))
+     (list python-pyyaml))
     (home-page "https://python-markdown.github.io/")
     (synopsis "Python implementation of Markdown")
     (description
