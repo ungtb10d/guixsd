@@ -196,6 +196,8 @@
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-check)
+  ;; Importing this module results in a cycle, see below.
+  ;#:use-module (gnu packages python-commencement)
   #:use-module (gnu packages python-compression)
   #:use-module (gnu packages python-crypto)
   #:use-module (gnu packages python-science)
@@ -242,6 +244,13 @@
   #:use-module (guix build-system trivial)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26))
+
+(define (module-variable-resolver module)
+  (lambda (variable)
+     (module-ref (resolve-interface module) variable)))
+
+(define python-commencement-package
+  (module-variable-resolver '(gnu packages python-commencement)))
 
 (define-public python-xmldiff
   (package
@@ -463,7 +472,7 @@ features of the Python's built-in dict.")
         (base32 "0ifv7dv18jn2lg0a3l6zdlvmmlda2ivixfjbsda58a2ay6kxznr0"))))
     (build-system python-build-system)
     (arguments
-     `(#:python ,python-2))))
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)))))
 
 (define-public python-argopt
   (package
@@ -1210,7 +1219,7 @@ etc.")
         "1wndipik52cyqy0677zdgp90i435pmvwd89cz98lm7ri0y3xjajh"))))
     (build-system python-build-system)
     (arguments
-     `(#:python ,python-2
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)
        #:tests? #f)) ; no test target
     (home-page "https://bitbucket.org/brandon/backports.ssl_match_hostname")
     (synopsis "Backport of ssl.match_hostname() function from Python 3.5")
@@ -2400,7 +2409,7 @@ standard.")
            (base32
             "1qzjj8nwj4dn0mhq1j64f136afiqqb81lvqiikipz3g1g0b80lqx"))))
       (arguments
-       `(#:python ,python-2
+       `(#:python ,(python-commencement-package 'python2-toolchain-for-build)
          #:tests? #f)))))     ; No test suite.
 
 (define-public python-eventlet
@@ -2734,7 +2743,7 @@ commands.")
                 "016bphqnlg0l4vslahhw4r0aanw95bpypy65r1i1acyb2wj5z7dj"))))
     (build-system python-build-system)
     (arguments
-     `(#:python ,python-2                       ; seems to be part of Python 3
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)    ; seems to be part of Python 3
        #:tests? #f))                            ; no 'test' sub-command
     (synopsis "Toolkit for XML processing in Python")
     (description
@@ -2760,7 +2769,7 @@ commands.")
                                        "pybugz-encode-error.patch"))))
     (build-system python-build-system)
     (arguments
-     `(#:python ,python-2                         ; SyntaxError with Python 3
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)      ; SyntaxError with Python 3
        #:tests? #f))                              ; no 'test' sub-command
     (propagated-inputs
      `(("element-tree" ,python2-element-tree)))
@@ -2784,7 +2793,7 @@ bug tracker.")
                 "13lk3yrwj42vl30kw3c194f739nrfrdg64s6i0v2p636n4k8brsl"))))
     (build-system python-build-system)
     (arguments
-     `(#:python ,python-2))
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)))
     (home-page "https://pypi.org/project/enum/")
     (synopsis "Robust enumerated type support in Python")
     (description
@@ -3153,7 +3162,7 @@ port forwards using @acronym{UPnP, Universal Plug and Play}.")
                 "0l4g5818ffyfmfs1a924811azhjj8ax9xd1cffr1mzd3ycn0zfx7"))))
     (build-system python-build-system)
     (arguments
-     `(#:python ,python-2))
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)))
     (native-inputs
      (list python2-unittest2))
     (home-page "http://funcsigs.readthedocs.org")
@@ -4051,7 +4060,7 @@ logic-free templating system Mustache.")
                (strip-python2-variant python-pystache))))
     (package/inherit base
       (arguments
-       `(#:python ,python-2
+       `(#:python ,(python-commencement-package 'python2-toolchain-for-build)
          #:phases
          (modify-phases %standard-phases
            (replace 'check
@@ -5541,7 +5550,7 @@ writing C extensions for Python as easy as Python itself.")
     (package/inherit base
       (name "python2-cython")
       (inputs
-       `(("python-2" ,python-2)))       ;this is not automatically changed
+       `(("python-2" ,(python-commencement-package 'python2-toolchain-for-build))))       ;this is not automatically changed
       (arguments
        (substitute-keyword-arguments (package-arguments base)
          ((#:phases phases)
@@ -6606,7 +6615,7 @@ toolkits.")
          ("python2-pytz" ,python2-pytz)
          ("python2-six" ,python2-six)
          ("python2-subprocess32" ,python2-subprocess32)
-         ("python2-tkinter" ,python-2 "tk"))))))
+         ("python2-tkinter" ,(python-commencement-package 'python2-toolchain-for-build) "tk"))))))
 
 (define-public python-matplotlib-documentation
   (package
@@ -7084,7 +7093,7 @@ Python's distutils.")
     (build-system python-build-system)
     (arguments
      ;; incompatible with Python 3 (exception syntax)
-     `(#:python ,python-2
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)
        #:tests? #f))
     (home-page "https://github.com/dieterv/elib.intl")
     (synopsis "Enhanced internationalization for Python")
@@ -8236,7 +8245,7 @@ older Python versions.")
                 "0y3hg12iby1qyaspnbisz4s4vxax7syikk3skznwqizqyv89y9yk"))))
     (build-system python-build-system)
     (arguments
-     `(#:python ,python-2
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)
        #:phases (modify-phases %standard-phases
                   ;; The build system tests for python-wheel, but it is
                   ;; not required for Guix nor the test suite.  Just drop
@@ -9303,7 +9312,7 @@ implementation of D-Bus.")
 (define-public python2-dbus
   (package/inherit python-dbus
     (name "python2-dbus")
-    (inputs `(("python" ,python-2)
+    (inputs `(("python" ,(python-commencement-package 'python2-toolchain-for-build))
               ,@(alist-delete "python"
                               (package-inputs python-dbus))))
     (arguments
@@ -9402,7 +9411,7 @@ converts incoming documents to Unicode and outgoing documents to UTF-8.")
          (sha256
           (base32
            "09gbd49mwz86k572r1231x2rdp82p42zlnw0bz9b9mfi58r9wwl4"))))
-      (arguments `(#:python ,python-2)))))
+      (arguments `(#:python ,(python-commencement-package 'python2-toolchain-for-build))))))
 
 (define-public python-soupsieve
   (package
@@ -9521,7 +9530,7 @@ of the structure, dynamics, and functions of complex networks.")
                  (base32
                   "12swxb15299v9vqjsq4z8rgh5sdhvpx497xwnhpnb0gynrx6zra5"))))
       (arguments
-       `(#:python ,python-2))
+       `(#:python ,(python-commencement-package 'python2-toolchain-for-build)))
       (native-inputs
        (list python2-nose unzip)))))
 
@@ -10089,7 +10098,7 @@ Python 2 and Python 3.")
          "107cmn7g3jnbkp826zlj8rrj19fam301qvaqf0f3905f5217lgki"))))
     (build-system python-build-system)
     (arguments
-     `(#:python ,python-2
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)
        #:phases
        (modify-phases %standard-phases
          (replace 'check
@@ -11442,7 +11451,7 @@ and MAC network addresses.")
          "1gmz4r1w0yzj6fjjypnalmfyy0lnfznydyn62gi3wk50j5hhxbny"))))
     (build-system python-build-system)
     (arguments
-     `(#:python ,python-2))                       ;Python 3.x is not supported
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)))                       ;Python 3.x is not supported
     (home-page "https://github.com/svinota/pyroute2")
     (synopsis "Python netlink library")
     (description
@@ -12225,7 +12234,7 @@ for OER and UPER.")
         (base32 "1dwq3ngsapjc93fw61rp17fvzggmab5x1drjzvd4y4q0i255nm8v"))))
     (build-system python-build-system)
     (arguments
-     `(#:python ,python-2                         ;version 2 only
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)      ;version 2 only
        #:phases
        (modify-phases %standard-phases
          (replace 'check
@@ -12430,7 +12439,7 @@ a hash value.")
 (define-public python2-tlsh
   (package/inherit python-tlsh
     (name "python2-tlsh")
-    (inputs `(("python" ,python-2)))))
+    (inputs `(("python" ,(python-commencement-package 'python2-toolchain-for-build))))))
 
 (define-public python-termcolor
   (package
@@ -13985,7 +13994,7 @@ to the Python ecosystem.")
           "0v8ya0b58x47wp216n1zamimv4iw57cxz3xxhzix52jkw3xks9gn"))))
     (build-system python-build-system)
     (arguments
-     `(#:python ,python-2
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)
        #:tests? #f)) ; no test target
     (home-page "https://github.com/MiCHiLU/python-functools32")
     (synopsis
@@ -14009,7 +14018,7 @@ to the Python ecosystem.")
                (search-patches "python2-subprocess32-disable-input-test.patch"))))
     (build-system python-build-system)
     (arguments
-     `(#:python ,python-2
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)
        ;; The test suite fails with Python > 2.7.13:
        ;;     import test.support
        ;; ImportError: No module named support
@@ -14045,7 +14054,7 @@ otherwise matches 3.2’s API.")
           "0rdjmmsab550kxsssdq49jcniz77zlkpw4pvi9hvib3lsskjmh4y"))))
     (build-system python-build-system)
     (arguments
-     `(#:python ,python-2
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)
        #:phases
        (modify-phases %standard-phases
          (replace 'check
@@ -15406,7 +15415,7 @@ anymore.")
     ;; version is 3.4 which already includes this package as part of the
     ;; standard library.
     (arguments
-     `(#:python ,python-2))
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)))
     (propagated-inputs
      (list python2-scandir python2-six))
     (home-page "https://pypi.org/project/pathlib2/")
@@ -15484,7 +15493,7 @@ encoding algorithms to do fuzzy string matching.")
     (build-system python-build-system)
     (arguments
      `(;; It supports Python 3, but Python 3 can already do Unicode CSV.
-       #:python ,python-2))
+       #:python ,(python-commencement-package 'python2-toolchain-for-build)))
     (native-inputs
      (list python2-unittest2))
     (home-page "https://github.com/jdunck/python-unicodecsv")
@@ -15687,7 +15696,7 @@ the same purpose: to provide Python bindings for libmagic.")
     (build-system python-build-system)
     (arguments
      ;; s3cmd is written for python2 only and contains no tests.
-     `(#:python ,python-2
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)
        #:tests? #f))
     (propagated-inputs
      (list python2-dateutil
@@ -15876,7 +15885,7 @@ respectively.")
           "0nzwrzgw1ga8rw6f0ryq7zr9kkiavd1cqz5hzxkcbicl1dk7kz41"))))
   (build-system python-build-system)
   (arguments
-   `(#:python ,python-2
+   `(#:python ,(python-commencement-package 'python2-toolchain-for-build)
      #:phases (modify-phases %standard-phases
                (add-after 'unpack 'fix-resulting-include-libs
                 (lambda* (#:key inputs #:allow-other-keys)
@@ -16406,7 +16415,7 @@ specified in POSIX.1-2001 and POSIX.1-2008.")
     (build-system python-build-system)
     (arguments
      `(#:tests? #f
-       #:python ,python-2))
+       #:python ,(python-commencement-package 'python2-toolchain-for-build)))
     (home-page "https://github.com/joshmarshall/jsonrpclib/")
     (synopsis "Implementation of JSON-RPC specification for Python")
     (description
@@ -18635,7 +18644,7 @@ multitouch applications.")
          "1xmkl8v9l9inm2pyxgc1fm5005yxm7fkd5gv74q7lj1iy5qc8n3h"))))
     (build-system python-build-system)
     (arguments
-     `(#:python ,python-2
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)
        #:phases
        (modify-phases %standard-phases
          (delete 'check)
@@ -18957,7 +18966,7 @@ multitouch applications.")
          "06cw4zg42fsvqy372vi2whj26w56vzg5axhzwdjc2bgwf03garbw"))))
     (build-system python-build-system)
     (arguments
-     `(#:python ,python-2))
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)))
     (home-page "https://liw.fi/tracing/")
     (synopsis "Python debug logging helper")
     (description "@code{python2-tracing} is a python library for
@@ -19136,7 +19145,7 @@ multitouch applications.")
     (native-inputs
      (list python2-setuptools-scm))
     (arguments
-     `(#:python ,python-2))
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)))
     (home-page "https://github.com/jaraco/backports.functools_lru_cache")
     (synopsis "Backport of functools.lru_cache from Python 3.3")
     (description "@code{python2-backports-functools-lru-cache} is a backport
@@ -19252,7 +19261,7 @@ multitouch applications.")
          "1r6nznp64j68ih1k537wms7h57nvppq0szmwsaf99n71bfjqkc32"))))
     (build-system python-build-system)
     (arguments
-     `(#:python ,python-2))
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)))
     (home-page "https://github.com/ThomasWaldmann/argparse/")
     (synopsis "Python command-line parsing library")
     (description
@@ -19429,7 +19438,7 @@ multitouch applications.")
         (base32 "0ldwa24gnnxhniv0fhygkpc2mwgd93q10ag8rvzayv6hw418frsr"))))
     (build-system python-build-system)
     (arguments
-     `(#:python ,python-2))
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)))
     (home-page "https://bitbucket.org/mchaput/stemming/overview")
     (synopsis "Python implementations of various stemming algorithms")
     (description
@@ -19679,7 +19688,7 @@ multitouch applications.")
          "1qqaxyqz74wvid0cr119dhcwz0h0if5b5by44zl49pd5z65v58k1"))))
     (build-system python-build-system)
     (arguments
-     `(#:python ,python-2))
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)))
     (home-page "https://github.com/gabrielfalcao/couleur")
     (synopsis
      "ANSI terminal tool for python, colored shell and other handy fancy features")
@@ -19740,7 +19749,7 @@ multitouch applications.")
     (native-inputs
      (list python2-couleur python2-sure python2-misaka))
     (arguments
-     `(#:python ,python-2
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)
        #:phases
        (modify-phases %standard-phases
          (add-before 'build 'patch-setup-py
@@ -20909,7 +20918,7 @@ Angus Johnson's polygon clipping Clipper library (ver. 6.4.2).")
          "1hw42fazdpvsn77glx96hwsj9l17mvx37sc5707s08y5w6fx16mn"))))
     (build-system python-build-system)
     (arguments
-     `(#:python ,python-2))
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)))
     (native-inputs
      (list unzip python2-pytest python2-pytest-runner))
     (propagated-inputs
@@ -21085,7 +21094,7 @@ objects on other machines, also known as remote procedure calls (RPC).")
     (build-system python-build-system)
     (arguments
      ;; Pyro is not compatible with Python 3
-     `(#:python ,python-2
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)
        ;; Pyro has no test cases for automatic execution
        #:tests? #f))
     (home-page "https://pythonhosted.org/Pyro/")
@@ -21120,7 +21129,7 @@ is the new Pyro version that is actively developed.")
      (list python2-numpy-1.8 python2-pyro))
     (arguments
      ;; ScientificPython is not compatible with Python 3
-     `(#:python ,python-2
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)
        #:tests? #f ; No test suite
        #:phases
        (modify-phases %standard-phases
@@ -21157,9 +21166,9 @@ not actively maintained and works only with Python 2 and NumPy < 1.9.")
      (list netcdf))
     (propagated-inputs
      `(("python-scientific" ,python2-scientific)
-       ("python-tkinter" ,python-2 "tk")))
+       ("python-tkinter" ,(python-commencement-package 'python2-toolchain-for-build) "tk")))
     (arguments
-     `(#:python ,python-2
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)
        #:tests? #f
        #:phases
        (modify-phases %standard-phases
@@ -21754,7 +21763,7 @@ with PEP 484 argument (and return) type annotations.")
        (sha256
         (base32 "0c5il4d68fd4qrm5k3dps70j0xz0n5krj6lhwn9vzpal3whsvd0k"))))
     (build-system python-build-system)
-    (arguments (list #:python python-2))
+    (arguments (list #:python (python-commencement-package 'python2-toolchain-for-build)))
     (home-page "https://docs.python.org/3/library/typing.html")
     (synopsis "Type hints for Python")
     (description "This is a backport of the standard library @code{typing}
@@ -21926,7 +21935,7 @@ file system events on Linux.")
     (native-inputs
      (list unzip))
     (arguments
-     `(#:python ,python-2
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)
        #:tests? #f
        #:phases
        (modify-phases %standard-phases
@@ -21998,7 +22007,7 @@ working with iterables.")
                (base32
                 "1r12cm6mcdwdzz7d47a6g4l437xsvapdlgyhqay3i2nrlv03da9q"))))
     (arguments
-     `(#:python ,python-2))
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)))
     (propagated-inputs
      `(("python2-six" ,python2-six-bootstrap)))))
 
@@ -24203,7 +24212,7 @@ enumeration library in Python.")
          "0ykzg730n915qbrq9bn5pn06bv6rb5zawal4sqjyfnjjm66snkj3"))))
     (build-system python-build-system)
     (arguments
-     `(#:python ,python-2
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)
        #:phases
        (modify-phases %standard-phases
          (add-after 'unpack 'patch-requires
@@ -27189,7 +27198,7 @@ process.")
     (inputs
      (list libpng libtiff zlib))
     (arguments
-     `(#:python ,python-2
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)
        #:phases
        (modify-phases %standard-phases
          (add-after 'unpack 'disable-wx-support

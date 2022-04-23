@@ -91,6 +91,13 @@
   #:use-module (guix build-system trivial)
   #:use-module (srfi srfi-1))
 
+(define (module-variable-resolver module)
+  (lambda (variable)
+     (module-ref (resolve-interface module) variable)))
+
+(define python-commencement-package
+  (module-variable-resolver '(gnu packages python-commencement)))
+
 (define-public pict
   (package
     (name "pict")
@@ -1062,7 +1069,7 @@ and many external plugins.")
                 "0ls3pqr86xgif6bphsb6wrww9r2vc7p7a2naq8zcq8115wwq5yjh"))))
     (build-system python-build-system)
     (arguments
-     `(#:python ,python-2
+     `(#:python ,(python-commencement-package 'python2-toolchain-for-build)
        ,@(package-arguments python-pytest)))
     (propagated-inputs
      `(("python-atomicwrites" ,python2-atomicwrites)
@@ -1380,7 +1387,7 @@ same arguments.")
           (base32
            "1i5mg3ff1qk0wqfcxfz60hwy3q5dskdp36i10ckigkzffg8hc3ad"))))
       (arguments
-       `(#:python ,python-2))
+       `(#:python ,(python-commencement-package 'python2-toolchain-for-build)))
       (native-inputs
        `(("python2-setuptools-scm" ,python2-setuptools-scm)))
       (propagated-inputs
@@ -3024,7 +3031,7 @@ system.  The code under test requires no modification to work with pyfakefs.")
      (name "python2-pyfakefs-bootstrap")
      (native-inputs '())
      (arguments
-      `(#:python ,python-2
+      `(#:python ,(python-commencement-package 'python2-toolchain-for-build)
         #:tests? #f)))))
 
 (define-public python-aiounittest
