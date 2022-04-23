@@ -29,7 +29,9 @@
   #:use-module (guix gexp)
   #:use-module (guix download)
   #:use-module (guix git-download)
-  #:use-module (guix packages))
+  #:use-module (guix packages)
+  #:use-module (gnu packages)
+  #:use-module (gnu packages python))
 
 ;;; Commentary:
 ;;;
@@ -58,11 +60,23 @@
           ;; TODO: Find some way to build them ourself so we can include them.
           (for-each delete-file (find-files "setuptools" "^(cli|gui).*\\.exe$"))
           #t))))
+    (outputs '("out" "wheel"))
     (build-system python-build-system)
     ;; FIXME: Tests require pytest, which itself relies on setuptools.
     ;; One could bootstrap with an internal untested setuptools.
     (arguments
-     `(#:tests? #f))
+     `(#:tests? #f
+       #:python ,python-wrapper ; Break cycle with default build system’s setuptools dependency.
+       #:phases (modify-phases %standard-phases
+                  ;; Use this setuptools’ sources to bootstrap themselves.
+                  (add-before 'build 'set-PYTHONPATH
+                    (lambda _
+                      (format #t "current working dir ~s~%" (getcwd))
+                      (setenv "GUIX_PYTHONPATH"
+                              (string-append ".:" (getenv "GUIX_PYTHONPATH")))
+                      #t)))))
+    ;; Required to build wheels.
+    (propagated-inputs `(("python-wheel" ,python-wheel)))
     (home-page "https://pypi.org/project/setuptools/")
     (synopsis
      "Library designed to facilitate packaging Python projects")
@@ -82,6 +96,14 @@ Python 3 support.")
                    license:asl2.0      ; packaging is dual ASL2/BSD-2
                    license:bsd-2))
     (properties `((python2-variant . ,(delay python2-setuptools))))))
+
+;; Break loop between python-setuptools and python-wheel.
+(define-public python-setuptools-bootstrap
+  (package
+    (inherit python-setuptools)
+    (name "python-setuptools-bootstrap")
+    (propagated-inputs `(("python-wheel" ,python-wheel-bootstrap)))
+    (properties `((python2-variant . ,(delay python2-setuptools-bootstrap))))))
 
 ;; Newer versions of setuptools no longer support Python 2.
 (define-public python2-setuptools
@@ -107,9 +129,10 @@ Python 3 support.")
     ;; FIXME: Tests require pytest, which itself relies on setuptools.
     ;; One could bootstrap with an internal untested setuptools.
     (arguments
-     `(#:tests? #f))
-    (native-inputs
-     (list unzip))
+     `(#:tests? #f
+       #:python ,python-2 ; Break loop to python2-toolchain-for-build
+       ))
+    (propagated-inputs `(("python2-wheel" ,python2-wheel)))
     (home-page "https://pypi.org/project/setuptools/")
     (synopsis
      "Library designed to facilitate packaging Python projects")
@@ -129,6 +152,12 @@ Python 3 support.")
                    license:asl2.0       ; packaging is dual ASL2/BSD-2
                    license:bsd-2))))
 
+(define-public python2-setuptools-bootstrap
+  (package
+    (inherit python2-setuptools)
+    (name "python2-setuptools-bootstrap")
+    (propagated-inputs `(("python2-wheel" ,python2-wheel-bootstrap)))))
+
 (define-public python-wheel
   (package
     (name "python-wheel")
@@ -142,10 +171,8 @@ Python 3 support.")
           "1bbga5i49rj1cwi4sjpkvfhl1f8vl9lfky2lblsy768nk4wp5vz2"))))
     (build-system python-build-system)
     (arguments
-     ;; FIXME: The test suite runs "python setup.py bdist_wheel", which in turn
-     ;; fails to find the newly-built bdist_wheel library, even though it is
-     ;; available on PYTHONPATH.  What search path is consulted by setup.py?
-     '(#:tests? #f))
+     `(#:python ,python-wrapper)) ; Break cycle with python-toolchain-for-build.
+    (native-inputs `(("python-setuptools" ,python-setuptools-bootstrap)))
     (home-page "https://bitbucket.org/pypa/wheel/")
     (synopsis "Format for built Python packages")
     (description
@@ -158,8 +185,65 @@ scripts to their final locations) at any later time.  Wheel files can be
 installed with a newer @code{pip} or with wheel's own command line utility.")
     (license license:expat)))
 
+(define-public python-wheel-bootstrap
+  (package
+    (inherit python-wheel)
+    (name "python-wheel-bootstrap")
+    (build-system copy-build-system)
+    (native-inputs '()) ; Break cycle to setuptools.
+    (arguments
+     `(#:install-plan
+       ;; XXX: Do not hard-code Python version.
+       '(("src/wheel" "lib/python3.9/site-packages/wheel"))
+       #:phases
+       (modify-phases %standard-phases
+         ;; Add metadata for setuptools, so it will find the wheel-building code.
+         (add-after 'install 'install-metadata
+           (lambda* (#:key outputs #:allow-other-keys)
+             (let* ((out (assoc-ref outputs "out"))
+                    (site-dir (string-append out "/lib/python3.9/site-packages"))
+                    (metadata-dir (string-append site-dir "/wheel.egg-info")))
+               (mkdir-p metadata-dir)
+               (call-with-output-file (string-append metadata-dir "/entry_points.txt")
+                 (lambda (port)
+                   (format port "~
+                           [distutils.commands]~@
+                           bdist_wheel = wheel.bdist_wheel:bdist_wheel~%")))))))))
+    (properties `((python2-variant . ,(delay python2-wheel-bootstrap))))))
+
 (define-public python2-wheel
-  (package-with-python2 python-wheel))
+  (package
+    (inherit (package-with-python2 python-wheel))
+    (arguments `(#:python ,python-2))))
+
+(define-public python2-wheel-bootstrap
+  (package
+    (inherit python2-wheel)
+    (name "python2-wheel-bootstrap")
+    (build-system copy-build-system)
+    (native-inputs '()) ; Break cycle to setuptools.
+    (arguments
+     `(#:install-plan
+       ;; XXX: Do not hard-code Python version.
+       '(("src/wheel" "lib/python2.7/site-packages/wheel"))
+       #:phases
+       (modify-phases %standard-phases
+         ;; Add metadata for setuptools, so it will find the wheel-building code.
+         (add-after 'install 'install-metadata
+           (lambda* (#:key outputs #:allow-other-keys)
+             (let* ((out (assoc-ref outputs "out"))
+                    (site-dir (string-append out "/lib/python2.7/site-packages"))
+                    (metadata-dir (string-append site-dir "/wheel.egg-info")))
+               (mkdir-p metadata-dir)
+               (call-with-output-file (string-append metadata-dir "/entry_points.txt")
+                 (lambda (port)
+                   (format port "~
+                           [distutils.commands]~@
+                           bdist_wheel = wheel.bdist_wheel:bdist_wheel~%")))
+               (call-with-output-file (string-append metadata-dir "/PKG-INFO")
+                 (lambda (port)
+                   (format port "~
+                           Version: ~a" (version))))))))))))
 
 ;;; XXX: Not really at home, but this seems the best place to prevent circular
 ;;; module dependencies.
