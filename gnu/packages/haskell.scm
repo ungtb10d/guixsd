@@ -1000,6 +1000,42 @@ interactive environment for the functional language Haskell.")
                                 (file-pattern ".*\\.conf\\.d$")
                                 (file-type 'directory))))))
 
+(define-public ghc-9.0
+  (package
+    (inherit ghc-8.10)
+    (name "ghc")
+    (version "9.0.2")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append "https://www.haskell.org/ghc/dist/"
+                           version "/ghc-" version "-src.tar.xz"))
+       (sha256
+        (base32 "15wii8can2r3dcl6jjmd50h2jvn7rlmn05zb74d2scj6cfwl43hl"))))
+    (native-inputs
+     `(("ghc-bootstrap" ,ghc-8.10)
+       ("ghc-testsuite"
+        ,(origin
+           (method url-fetch)
+           (uri (string-append
+                 "https://www.haskell.org/ghc/dist/"
+                 version "/ghc-" version "-testsuite.tar.xz"))
+           (sha256
+            (base32
+             "1m5fzhr4gjn9ni8gxx7ag3fkbw1rspjzgv39mnfb0nkm5mw70v3s"))))
+       ("git" ,git-minimal/fixed)                 ; invoked during tests
+       ,@(filter (match-lambda
+                   (("ghc-bootstrap" . _) #f)
+                   (("ghc-testsuite" . _) #f)
+                   (_ #t))
+                 (package-native-inputs ghc-8.10))))
+    (native-search-paths (list (search-path-specification
+                                (variable "GHC_PACKAGE_PATH")
+                                (files (list
+                                        (string-append "lib/ghc-" version)))
+                                (file-pattern ".*\\.conf\\.d$")
+                                (file-type 'directory))))))
+
 ;; Versions newer than ghc defined below (i.e. the compiler
 ;; haskell-build-system uses) should use ghc-next as their name to
 ;; ensure ghc (without version specification) and ghc-* packages are
@@ -1007,6 +1043,8 @@ interactive environment for the functional language Haskell.")
 
 (define-public ghc-8 ghc-8.10)
 
-(define-public ghc ghc-8)
+(define-public ghc-9 ghc-9.0)
+
+(define-public ghc ghc-9)
 
 ;;; haskell.scm ends here
