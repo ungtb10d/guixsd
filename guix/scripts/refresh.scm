@@ -225,7 +225,8 @@ update would trigger a complete rebuild."
                          (('argument . spec)
                           ;; Take either the specified version or the
                           ;; latest one.
-                          (specification->package spec))
+                          (let* ((name version (package-name->name+version spec)))
+                            (list (specification->package name) version)))
                          (('expression . exp)
                           (read/eval-package-expression exp))
                          (_ #f))
@@ -299,7 +300,7 @@ update would trigger a complete rebuild."
            (G_ "no updater for ~a~%")
            (package-name package)))
 
-(define* (update-package store package updaters
+(define* (update-package store package version updaters
                          #:key (key-download 'interactive) warn?)
   "Update the source file that defines PACKAGE with the new version.
 KEY-DOWNLOAD specifies a download policy for missing OpenPGP keys; allowed
@@ -308,7 +309,7 @@ warn about packages that have no matching updater."
   (if (lookup-updater package updaters)
       (let ((version output source
                      (package-update store package updaters
-                                     #:key-download key-download))
+                                     #:key-download key-download #:version version))
             (loc (or (package-field-location package 'version)
                      (package-location package))))
         (when version
@@ -524,6 +525,18 @@ all are dependent packages: ~{~a~^ ~}~%")
       (lists
        (concatenate lists))))
 
+  (define (package-list-without-versions packages)
+    (map (match-lambda
+               ((package version) package)
+               (package package))
+              packages))
+
+  (define (package-list-with-versions packages)
+    (map (match-lambda
+               ((package version) (list package version))
+               (package (list package #f)))
+              packages))
+
   (let* ((opts            (parse-options))
          (update?         (assoc-ref opts 'update?))
          (updaters        (options->updaters opts))
@@ -541,12 +554,13 @@ all are dependent packages: ~{~a~^ ~}~%")
     (with-error-handling
       (with-store store
         (run-with-store store
+          (begin
           (mlet %store-monad ((packages (options->packages opts)))
             (cond
              (list-dependent?
-              (list-dependents packages))
+              (list-dependents (package-list-without-versions packages)))
              (list-transitive?
-              (list-transitive packages))
+              (list-transitive (package-list-without-versions packages)))
              (update?
               (parameterize ((%openpgp-key-server
                               (or (assoc-ref opts 'key-server)
@@ -559,13 +573,16 @@ all are dependent packages: ~{~a~^ ~}~%")
                                   (string-append (config-directory)
                                                  "/upstream/trustedkeys.kbx"))))
                 (for-each
-                 (cut update-package store <> updaters
-                      #:key-download key-download
-                      #:warn? warn?)
-                 packages)
+                 (cut apply
+                      (lambda (package version)
+                        (update-package store package version updaters
+                                        #:key-download key-download
+                                        #:warn? warn?))
+                      <>)
+                 (values (package-list-with-versions packages)))
                 (return #t)))
              (else
               (for-each (cut check-for-package-update <> updaters
                              #:warn? warn?)
-                        packages)
-              (return #t)))))))))
+                        (package-list-without-versions packages))
+              (return #t))))))))))
