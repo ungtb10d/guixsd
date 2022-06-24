@@ -5,6 +5,7 @@
 ;;; Copyright © 2020, 2021 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2020 Martin Becze <mjbecze@riseup.net>
 ;;; Copyright © 2021 Sarah Morgensen <iskarian@mgsn.dev>
+;;; Copyright © 2022 Hartmut Goebel <h.goebel@crazy-compilers.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -25,10 +26,12 @@
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (json)
+  #:use-module (guix diagnostics)
   #:use-module ((guix download) #:prefix download:)
   #:use-module (guix import utils)
   #:use-module (guix import json)
   #:use-module (guix packages)
+  #:use-module (guix i18n)
   #:use-module (guix upstream)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix base16)
@@ -167,8 +170,13 @@ package on RubyGems."
 (define gem-package?
   (url-prefix-predicate "https://rubygems.org/downloads/"))
 
-(define (latest-release package)
+(define* (latest-release package #:key (version #f))
   "Return an <upstream-source> for the latest release of PACKAGE."
+  (when version
+    (error
+     (formatted-message
+      (G_ "~a updater doesn't support updating to a specific version, sorry.")
+      "gem")))
   (let* ((gem-name (guix-package->gem-name package))
          (gem      (rubygems-fetch gem-name))
          (version  (gem-version gem))

@@ -4,6 +4,7 @@
 ;;; Copyright © 2020 Martin Becze <mjbecze@riseup.net>
 ;;; Copyright © 2021 Xinglu Chem <public@yoctocell.xyz>
 ;;; Copyright © 2021 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2022 Hartmut Goebel <h.goebel@crazy-compilers.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -160,8 +161,13 @@ PACKAGE or #f if the package is not included in the Stackage LTS release."
                   pkg
                   (stackage->guix-package hackage-name #:packages (packages))))))))))))
 
-(define (stackage-lts-package? package)
+(define* (stackage-lts-package? package #:key (version #f))
   "Return whether PACKAGE is available on the default Stackage LTS release."
+  (when version
+    (error
+     (formatted-message
+      (G_ "~a updater doesn't support updating to a specific version, sorry.")
+      "stackage")))
   (and (hackage-package? package)
        (let ((packages (stackage-lts-packages
                         (stackage-lts-info-fetch %default-lts-version)))
