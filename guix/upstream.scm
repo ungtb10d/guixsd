@@ -274,7 +274,8 @@ them matches."
 
 (define* (package-latest-release package
                                  #:optional
-                                 (updaters (force %updaters)))
+                                 (updaters (force %updaters))
+                                 #:key (version #f))
   "Return an upstream source to update PACKAGE, a <package> object, or #f if
 none of UPDATERS matches PACKAGE.  When several updaters match PACKAGE, try
 them until one of them returns an upstream source.  It is the caller's
@@ -283,7 +284,7 @@ one."
   (any (match-lambda
          (($ <upstream-updater> name description pred latest)
           (and (pred package)
-               (latest package))))
+               (latest package #:version version))))
        updaters))
 
 (define* (package-latest-release* package
@@ -487,13 +488,13 @@ SOURCE, an <upstream-source>."
 
 (define* (package-update store package
                          #:optional (updaters (force %updaters))
-                         #:key (key-download 'interactive))
+                         #:key (key-download 'interactive) (version #f))
   "Return the new version, the file name of the new version tarball, and input
 changes for PACKAGE; return #f (three values) when PACKAGE is up-to-date;
 raise an error when the updater could not determine available releases.
 KEY-DOWNLOAD specifies a download policy for missing OpenPGP keys; allowed
 values: 'always', 'never', and 'interactive' (default)."
-  (match (package-latest-release package updaters)
+  (match (package-latest-release package updaters #:version version)
     ((? upstream-source? source)
      (if (version>? (upstream-source-version source)
                     (package-version package))
@@ -516,9 +517,13 @@ this method: ~s")
                       #:key-download key-download))))
          (values #f #f #f)))
     (#f
-     (raise (formatted-message
-             (G_ "updater failed to determine available releases for ~a~%")
-             (package-name package))))))
+     (if version
+         (raise (formatted-message
+                 (G_ "updater failed to find release ~a@~a~%")
+                 (package-name package) version))
+         (raise (formatted-message
+                 (G_ "updater failed to determine available releases for ~a~%")
+                 (package-name package)))))))
 
 (define* (update-package-source package source hash)
   "Modify the source file that defines PACKAGE to refer to SOURCE, an
