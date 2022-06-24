@@ -330,6 +330,7 @@ name/directory pairs."
 
 (define* (latest-ftp-release project
                              #:key
+                             (version #f)
                              (server "ftp.gnu.org")
                              (directory (string-append "/gnu/" project))
                              (file->signature (cut string-append <> ".sig")))
@@ -400,8 +401,11 @@ return the corresponding signature URL, or #f it signatures are unavailable."
 
       ;; Assume that SUBDIRS correspond to versions, and jump into the
       ;; one with the highest version number.
-      (let* ((release  (reduce latest-release #f
-                               (coalesce-sources releases)))
+      (let* ((release  (if version
+                           (car (filter (lambda (r) (string=? version (upstream-source-version r)))
+                                        (coalesce-sources releases)))
+                           (reduce latest-release #f
+                                   (coalesce-sources releases))))
              (result   (if (and result release)
                            (latest-release release result)
                            (or release result)))
@@ -415,11 +419,13 @@ return the corresponding signature URL, or #f it signatures are unavailable."
 
 (define* (latest-release package
                          #:key
+                         (version #f)
                          (server "ftp.gnu.org")
                          (directory (string-append "/gnu/" package)))
   "Return the <upstream-source> for the latest version of PACKAGE or #f.
 PACKAGE must be the canonical name of a GNU package."
   (latest-ftp-release package
+                      #:version version
                       #:server server
                       #:directory directory))
 
@@ -435,7 +441,7 @@ of EXP otherwise."
           (close-port port))
       #f)))
 
-(define (latest-release* package)
+(define* (latest-release* package #:key (version #f))
   "Like 'latest-release', but (1) take a <package> object, and (2) ignore FTP
 errors that might occur when PACKAGE is not actually a GNU package, or not
 hosted on ftp.gnu.org, or not under that name (this is the case for
@@ -443,6 +449,7 @@ hosted on ftp.gnu.org, or not under that name (this is the case for
   (let-values (((server directory)
                 (ftp-server/directory package)))
     (false-if-ftp-error (latest-release (package-upstream-name package)
+                                        #:version version
                                         #:server server
                                         #:directory directory))))
 
@@ -469,6 +476,7 @@ hosted on ftp.gnu.org, or not under that name (this is the case for
 
 (define* (latest-html-release package
                               #:key
+                              (version #f)
                               (base-url "https://kernel.org/pub")
                               (directory (string-append "/" package))
                               file->signature)
@@ -535,16 +543,21 @@ are unavailable."
       (filter-map url->release links))
 
     (close-port port)
+    ;; FIXME: Handle if version is passed as argument
     (match candidates
       (() #f)
       ((first . _)
-       ;; Select the most recent release and return it.
-       (reduce (lambda (r1 r2)
-                 (if (version>? (upstream-source-version r1)
-                                (upstream-source-version r2))
-                     r1 r2))
-               first
-               (coalesce-sources candidates))))))
+       (if version
+           ;; find matching release version and return it
+           (car (filter (lambda (r) (string=? version (upstream-source-version r)))
+                        (coalesce-sources candidates)))
+           ;; Select the most recent release and return it.
+           (reduce (lambda (r1 r2)
+                         (if (version>? (upstream-source-version r1)
+                                        (upstream-source-version r2))
+                             r1 r2))
+                       first
+                       (coalesce-sources candidates)))))))
 
 
 ;;;
@@ -576,46 +589,55 @@ are unavailable."
            (call-with-gzip-input-port port
              (compose string->lines get-string-all))))))
 
-(define (latest-gnu-release package)
+(define* (latest-gnu-release package #:key (version #f))
   "Return the latest release of PACKAGE, a GNU package available via
 ftp.gnu.org.
 
 This method does not rely on FTP access at all; instead, it browses the file
 list available from %GNU-FILE-LIST-URI over HTTP(S)."
+
+  (define (find-latest-archive-version archives)
+    (fold (lambda (file1 file2)
+            (if (and file2
+                     (version>? (tarball-sans-extension (basename file2))
+                                (tarball-sans-extension (basename file1))))
+                file2
+                file1))
+          #f
+          archives))
+
   (let-values (((server directory)
                 (ftp-server/directory package))
                ((name)
                 (package-upstream-name package)))
     (let* ((files    (ftp.gnu.org-files))
+           ;; select archives for this package
            (relevant (filter (lambda (file)
                                (and (string-prefix? "/gnu" file)
                                     (string-contains file directory)
                                     (release-file? name (basename file))))
-                             files)))
-      (match (sort relevant (lambda (file1 file2)
-                              (version>? (tarball-sans-extension
-                                          (basename file1))
-                                         (tarball-sans-extension
-                                          (basename file2)))))
-        ((and tarballs (reference _ ...))
-         (let* ((version  (tarball->version reference))
-                (tarballs (filter (lambda (file)
-                                    (string=? (tarball-sans-extension
-                                               (basename file))
-                                              (tarball-sans-extension
-                                               (basename reference))))
-                                  tarballs)))
-           (upstream-source
-            (package name)
-            (version version)
-            (urls (map (lambda (file)
-                         (string-append "mirror://gnu/"
-                                        (string-drop file
-                                                     (string-length "/gnu/"))))
-                       tarballs))
-            (signature-urls (map (cut string-append <> ".sig") urls)))))
-        (()
-         #f)))))
+                             files))
+           ;; find latest version
+           (version (or version
+                        (and (not (null? relevant))
+                             (tarball->version
+                              (find-latest-archive-version relevant)))))
+           ;; find archives matching this version
+           (archives (filter (lambda (file)
+                               (string=? version (tarball->version file)))
+                             relevant)))
+    (match archives
+           (() #f)
+           (_
+            (upstream-source
+             (package name)
+             (version version)
+             (urls (map (lambda (file)
+                          (string-append "mirror://gnu/"
+                                         (string-drop file
+                                                      (string-length "/gnu/"))))
+                        archives))
+             (signature-urls (map (cut string-append <> ".sig") urls))))))))
 
 (define %package-name-rx
   ;; Regexp for a package name, e.g., "foo-X.Y".  Since TeXmacs uses
@@ -668,7 +690,7 @@ GNOME packages; EMMS is included though, because its releases are on gnu.org."
   ;; HTML (unlike <https://download.savannah.nongnu.org/releases>.)
   "https://nongnu.freemirror.org/nongnu")
 
-(define (latest-savannah-release package)
+(define* (latest-savannah-release package #:key (version #f))
   "Return the latest release of PACKAGE."
   (let* ((uri       (string->uri
                      (match (origin-uri (package-source package))
@@ -681,6 +703,7 @@ GNOME packages; EMMS is included though, because its releases are on gnu.org."
     ;; Note: We use the default 'file->signature', which adds ".sig", ".asc",
     ;; or whichever detached signature naming scheme PACKAGE uses.
     (and=> (latest-html-release package
+                                #:version version
                                 #:base-url %savannah-base
                                 #:directory directory)
            (cut adjusted-upstream-source <> rewrite))))
@@ -744,17 +767,18 @@ GNOME packages; EMMS is included though, because its releases are on gnu.org."
         (when port
           (close-port port))))))
 
-(define (latest-xorg-release package)
+(define* (latest-xorg-release package #:key (version #f))
   "Return the latest release of PACKAGE."
   (let ((uri (string->uri (origin-uri (package-source package)))))
     (false-if-ftp-error
      (latest-ftp-release
       (package-name package)
+      #:version version
       #:server "ftp.freedesktop.org"
       #:directory
       (string-append "/pub/xorg/" (dirname (uri-path uri)))))))
 
-(define (latest-kernel.org-release package)
+(define* (latest-kernel.org-release package #:key (version #f))
   "Return the latest release of PACKAGE, the name of a kernel.org package."
   (define %kernel.org-base
     ;; This URL and sub-directories thereof are nginx-generated directory
@@ -773,6 +797,7 @@ GNOME packages; EMMS is included though, because its releases are on gnu.org."
          (rewrite   (url-prefix-rewrite %kernel.org-base
                                         "mirror://kernel.org")))
     (and=> (latest-html-release package
+                                #:version version
                                 #:base-url %kernel.org-base
                                 #:directory directory
                                 #:file->signature file->signature)
@@ -801,7 +826,7 @@ GNOME packages; EMMS is included though, because its releases are on gnu.org."
       (or (assoc-ref (package-properties package) 'release-monitoring-url)
           (http-url? package)))))
 
-(define (latest-html-updatable-release package)
+(define* (latest-html-updatable-release package #:key (version #f))
   "Return the latest release of PACKAGE.  Do that by crawling the HTML page of
 the directory containing its source tarball."
   (let* ((uri       (string->uri
@@ -817,10 +842,12 @@ the directory containing its source tarball."
                         ""
                         (dirname (uri-path uri))))
          (package   (package-upstream-name package)))
+
     (catch #t
       (lambda ()
         (guard (c ((http-get-error? c) #f))
           (latest-html-release package
+                               #:version version
                                #:base-url base
                                #:directory directory)))
       (lambda (key . args)
