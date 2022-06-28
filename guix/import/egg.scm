@@ -2,6 +2,7 @@
 ;;; Copyright © 2021 Xinglu Chen <public@yoctocell.xyz>
 ;;; Copyright © 2021 Tobias Geerinckx-Rice <me@tobias.gr>
 ;;; Copyright © 2021 Sarah Morgensen <iskarian@mgsn.dev>
+;;; Copyright © 2022 Hartmut Goebel <h.goebel@crazy-compilers.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -333,10 +334,10 @@ not work."
 ;;; Updater.
 ;;;
 
-(define (latest-release package)
+(define* (latest-release package #:key (version #f))
   "Return an @code{<upstream-source>} for the latest release of PACKAGE."
   (let* ((egg-name (guix-package->egg-name package))
-         (version (find-latest-version egg-name))
+         (version (or version (find-latest-version egg-name)))
          (source-url (egg-uri egg-name version)))
     (upstream-source
      (package (package-name package))
