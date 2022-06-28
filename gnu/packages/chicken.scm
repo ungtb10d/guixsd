@@ -156,6 +156,25 @@ a characters and be compared to other character sets")
     (license (license:non-copyleft
               "http://wiki.call-cc.org/eggref/5/srfi-14#license"))))
 
+(define-public chicken-srfi-37
+  (package
+    (name "chicken-srfi-37")
+    (version "1.4")
+    (source (origin
+              (method url-fetch)
+              (uri (egg-uri "srfi-37" version))
+              (sha256
+               (base32
+                "10n2qyyv7n4r0m20wyzd8y6s6knc67kdh9i8gp8jgz8b05p7xy8g"))))
+    (build-system chicken-build-system)
+    (arguments '(#:egg-name "srfi-37"))
+    (native-inputs (list chicken-test))
+    (home-page "https://wiki.call-cc.org/egg/srfi-37")
+    (synopsis "SRFI-37 command-line option parsing for Chicken scheme")
+    (description "This package provides SRFI-37, a simple and flexible
+command-line option parsing facility, for Chicken scheme.")
+    (license (license:non-copyleft home-page)))) ;; TODO: refine
+
 (define-public chicken-srfi-69
   (package
     (name "chicken-srfi-69")
