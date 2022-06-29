@@ -2,6 +2,7 @@
 ;;; Copyright © 2019, 2020 Arun Isaac <arunisaac@systemreboot.net>
 ;;; Copyright © 2021 Matthew James Kraai <kraai@ftbfs.org>
 ;;; Copyright © 2020 Brice Waegeneire <brice@waegenei.re>
+;;; Copyright © 2022 Hartmut Goebel <h.goebel@crazy-compilers.com>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -121,7 +122,7 @@ for example, 'linuxdcpp'. Return #f if there is no releases."
       (last (remove pre-release? (vector->list (assoc-ref json "entries"))))
       "version"))))
 
-(define (latest-release pkg)
+(define* (latest-release pkg #:key (version #f))
   "Return an <upstream-source> for the latest release of PKG."
   (define (origin-launchpad-uri origin)
     (match (origin-uri origin)
@@ -132,7 +133,7 @@ for example, 'linuxdcpp'. Return #f if there is no releases."
   (let* ((source-uri (origin-launchpad-uri (package-source pkg)))
          (name (package-name pkg))
          (repository (launchpad-repository source-uri))
-         (newest-version (latest-released-version repository)))
+         (newest-version (or version (latest-released-version repository))))
     (if newest-version
         (upstream-source
          (package name)
