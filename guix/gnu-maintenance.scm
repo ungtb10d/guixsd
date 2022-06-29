@@ -34,6 +34,8 @@
   #:use-module ((guix http-client) #:hide (open-socket-for-uri))
   #:use-module (guix ftp-client)
   #:use-module (guix utils)
+  #:use-module (guix diagnostics)
+  #:use-module (guix i18n)
   #:use-module (guix memoization)
   #:use-module (guix records)
   #:use-module (guix upstream)
@@ -683,7 +685,7 @@ GNOME packages; EMMS is included though, because its releases are on gnu.org."
                                 #:directory directory)
            (cut adjusted-upstream-source <> rewrite))))
 
-(define (latest-sourceforge-release package)
+(define* (latest-sourceforge-release package #:key (version #f))
   "Return the latest release of PACKAGE."
   (define (uri-append uri extension)
     ;; Return URI with EXTENSION appended.
@@ -697,6 +699,12 @@ GNOME packages; EMMS is included though, because its releases are on gnu.org."
      (case (response-code (http-head uri #:port port #:keep-alive? #t))
        ((200 302) #t)
        (else #f))))
+
+  (when version
+    (error
+     (formatted-message
+      (G_ "Updating to a specific version is not yet implemented for ~a, sorry.")
+      "sourceforge")))
 
   (let* ((name     (package-upstream-name package))
          (base     (string-append "https://sourceforge.net/projects/"
