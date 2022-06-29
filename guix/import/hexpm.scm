@@ -328,11 +328,11 @@ latest version of PACKAGE-NAME."
 ;;; Updater
 ;;;
 
-(define (latest-release package)
+(define* (latest-release package #:key (version #f))
   "Return an <upstream-source> for the latest release of PACKAGE."
   (let* ((hexpm-name (guix-package->hexpm-name package))
          (hexpm      (lookup-hexpm hexpm-name))
-         (version    (hexpm-latest-release hexpm))
+         (version    (or version (hexpm-latest-release hexpm)))
          (url        (hexpm-uri hexpm-name version)))
     (upstream-source
      (package (package-name package))
