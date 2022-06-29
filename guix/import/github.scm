@@ -249,7 +249,7 @@ Alternatively, you can wait until your rate limit is reset, or use the
                                            #:headers headers)))
                    (x x)))))))))
 
-(define (latest-released-version url package-name)
+(define* (latest-released-version url package-name #:key (version #f))
   "Return the newest released version and its tag given a string URL like
 'https://github.com/arq5x/bedtools2/archive/v2.24.0.tar.gz' and the name of
 the package e.g. 'bedtools2'.  Return #f (two values) if there are no
@@ -290,15 +290,21 @@ releases."
   (match (and=> (fetch-releases-or-tags url) vector->list)
     (#f (values #f #f))
     (json
-     (match (sort (filter-map release->version
-                              (match (remove pre-release? json)
-                                (() json)         ; keep everything
-                                (releases releases)))
-                  (lambda (x y) (version>? (car x) (car y))))
+     (let ((releases (filter-map release->version
+                                 (match (remove pre-release? json)
+                                        (() json)         ; keep everything
+                                        (releases releases)))))
+       (match (if version
+                  ;; find matching release version
+                  (filter (lambda (x) (string=? version (car x)))
+                          releases)
+                  ;; sort releases descending
+                  (sort releases
+                        (lambda (x y) (version>? (car x) (car y)))))
        (((latest-version . tag) . _) (values latest-version tag))
-       (() (values #f #f))))))
+       (() (values #f #f)))))))
 
-(define (latest-release pkg)
+(define* (latest-release pkg #:key (version #f))
   "Return an <upstream-source> for the latest release of PKG."
   (define (github-uri uri)
     (match uri
@@ -313,7 +319,8 @@ releases."
          (source-uri (github-uri original-uri))
          (name (package-name pkg))
          (newest-version version-tag
-                         (latest-released-version source-uri name)))
+                         (latest-released-version source-uri name
+                                                  #:version version)))
     (if newest-version
         (upstream-source
          (package name)
