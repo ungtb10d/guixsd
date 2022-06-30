@@ -24,6 +24,7 @@
   #:use-module (guix git)
   #:use-module (guix git-download)
   #:use-module (guix i18n)
+  #:use-module ((guix import github)  #:select (github-package?))
   #:use-module (guix packages)
   #:use-module (guix upstream)
   #:use-module (guix utils)
@@ -203,7 +204,8 @@ tag, or #false and #false if the latest version could not be determined."
   (match (package-source package)
     ((? origin? origin)
      (and (eq? (origin-method origin) git-fetch)
-          (git-reference? (origin-uri origin))))
+          (git-reference? (origin-uri origin))
+          (not (github-package? package))))
     (_ #f)))
 
 (define (latest-git-release package)

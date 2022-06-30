@@ -42,7 +42,7 @@
   #:use-module (guix http-client)
   #:use-module (web uri)
   #:use-module (web response)
-  #:export (%github-api %github-updater))
+  #:export (%github-api %github-updater github-package?))
 
 ;; For tests.
 (define %github-api (make-parameter "https://api.github.com"))
