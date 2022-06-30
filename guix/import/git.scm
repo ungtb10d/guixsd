@@ -148,7 +148,8 @@ version corresponding to the tag, and the cdr is the name of the tag."
                            tags)
                entry<?))
 
-(define* (latest-tag url #:key prefix suffix delim pre-releases?)
+(define* (latest-tag url
+                     #:key prefix suffix delim pre-releases? (version #f))
   "Return the latest version and corresponding tag available from the Git
 repository at URL."
   (define (pre-release? tag)
@@ -171,11 +172,18 @@ repository at URL."
      ((null? versions->tags)
       (git-no-valid-tags-error))
      (else
-      (match (last versions->tags)
-        ((version . tag)
-         (values version tag)))))))
+      (let ((version-to-pick
+             (if version
+                 (filter (lambda (vt) (string=? version (car vt)))
+                         versions->tags)
+                 versions->tags)))
+        (if (null? version-to-pick)
+            (values #f #f)
+            (match (last version-to-pick)
+                   ((version . tag)
+                    (values version tag)))))))))
 
-(define (latest-git-tag-version package)
+(define* (latest-git-tag-version package #:key (version #f))
   "Given a PACKAGE, return the latest version of it and the corresponding git
 tag, or #false and #false if the latest version could not be determined."
   (guard (c ((or (git-no-tags-error? c) (git-no-valid-tags-error? c))
@@ -195,6 +203,7 @@ tag, or #false and #false if the latest version could not be determined."
            (url (git-reference-url (origin-uri source)))
            (property (cute assq-ref (package-properties package) <>)))
       (latest-tag url
+                  #:version version
                   #:prefix (property 'release-tag-prefix)
                   #:suffix (property 'release-tag-suffix)
                   #:delim (property 'release-tag-version-delimiter)
@@ -209,12 +218,13 @@ tag, or #false and #false if the latest version could not be determined."
           (not (github-package? package))))
     (_ #f)))
 
-(define (latest-git-release package)
+(define* (latest-git-release package #:key (version #f))
   "Return an <upstream-source> for the latest release of PACKAGE."
   (let* ((name (package-name package))
          (old-version (package-version package))
          (old-reference (origin-uri (package-source package)))
-         (new-version new-version-tag (latest-git-tag-version package)))
+         (new-version new-version-tag
+                      (latest-git-tag-version package #:version version)))
     (and new-version new-version-tag
          (upstream-source
           (package name)
