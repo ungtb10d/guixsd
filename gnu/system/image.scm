@@ -65,6 +65,7 @@
   #:use-module (ice-9 match)
   #:export (root-offset
             root-label
+            image-without-os
 
             esp-partition
             esp32-partition
@@ -102,6 +103,36 @@
 ;; Generic root partition label.
 (define root-label "Guix_image")
 
+(define-syntax image-without-os
+  (lambda (x)
+    "Return an image record with the mandatory operating-system field set to
+#false.  This is useful when creating an image record that will serve as a
+parent image record."
+
+    (define (maybe-cons field acc)
+      ;; Return the given ACC list if FIELD is 'operating-system or the
+      ;; concatenation of FIELD to ACC otherwise.
+      (syntax-case field ()
+        ((f v)
+         (if (eq? (syntax->datum #'f) 'operating-system)
+             acc
+             (cons field acc)))))
+
+    (syntax-case x (image)
+      ;; Remove the operating-system field from the defined fields and then
+      ;; force it to #false.
+      ((_ fields ...)
+       (let loop ((fields #'(fields ...))
+                  (acc   '()))
+         (syntax-case fields ()
+           ((last)
+            #`(image
+               ;; Force it to #false.
+               (operating-system #false)
+               #,@(maybe-cons #'last acc)))
+           ((field rest ...)
+            (loop #'(rest ...) (maybe-cons #'field acc)))))))))
+
 (define esp-partition
   (partition
    (size (* 40 (expt 2 20)))
@@ -127,17 +158,17 @@
    (initializer (gexp initialize-root-partition))))
 
 (define efi-disk-image
-  (image
+  (image-without-os
    (format 'disk-image)
    (partitions (list esp-partition root-partition))))
 
 (define efi32-disk-image
-  (image
+  (image-without-os
    (format 'disk-image)
    (partitions (list esp32-partition root-partition))))
 
 (define iso9660-image
-  (image
+  (image-without-os
    (format 'iso9660)
    (partitions
     (list (partition
@@ -146,11 +177,11 @@
            (flags '(boot)))))))
 
 (define docker-image
-  (image
+  (image-without-os
    (format 'docker)))
 
 (define* (raw-with-offset-disk-image #:optional (offset root-offset))
-  (image
+  (image-without-os
    (format 'disk-image)
    (partitions
     (list (partition
