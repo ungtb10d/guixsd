@@ -52,6 +52,7 @@
 # Copyright © 2022 Artyom V. Poptsov <poptsov.artyom@gmail.com>
 # Copyright © 2022 John Kehayias <john.kehayias@protonmail.com>
 # Copyright © 2022 muradm <mail@muradm.net>
+# Copyright © 2022 Alex Griffin <a@ajgrf.com>
 #
 # This file is part of GNU Guix.
 #
@@ -716,6 +717,7 @@ GNU_SYSTEM_MODULES =				\
   %D%/system/images/pine64.scm			\
   %D%/system/images/pinebook-pro.scm		\
   %D%/system/images/rock64.scm			\
+  %D%/system/images/wsl2.scm			\
 						\
   %D%/machine.scm				\
 						\
