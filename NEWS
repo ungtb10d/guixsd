@@ -17,6 +17,7 @@ Please send Guix bug reports to bug-guix@gnu.org.
 ** Package management
 *** New ‘guix home’ command, for home environment management
 *** New ‘guix shell’ command, the successor to ‘guix environment’
+*** New ‘guix system edit’ command, to edit services
 *** New ‘deb’ format for the ‘guix pack’ command
 *** New ‘guix import minetest’ command, to import Minetest extensions
 *** New ‘guix import elm’ command, to import Elm packages
@@ -31,6 +32,7 @@ Please send Guix bug reports to bug-guix@gnu.org.
 *** ‘guix deploy’ has a new ‘--execute’ option
 *** ‘--with-commit’ option now accepts strings returned by ‘git describe’
 *** New ‘--tune’ package transformation option
+*** ‘guix refresh’ ‘-L’ option is repurposed to ‘load-path’ modification
 ** Distribution
 *** The installation script can now enable local substitute servers discovery
 *** More control over boot-time file system checks and repairs
@@ -53,8 +55,26 @@ Please send Guix bug reports to bug-guix@gnu.org.
 *** The Graphical installer final configuration is prettified
 *** The Graphical installer now has a crash dump upload mechanism
 *** Emacs now supports native compilation
+*** GRUB bootloader now supports chain-loading
+*** New services
+anonip, bitmask, fail2ban, gitile, greetd, jami, lightdm, log-cleanup,
+nar-herder, opendht, rasdaemon, seatd, strongswan
+
 ** Programming interfaces
 *** (guix records) now supports “field sanitizers”
+*** New (guix cpu) module
+*** New (guix least-authority) module
+*** New (guix plaform) module
+*** New (guix read-print) module
+
+It provides a comment-preserving reader and a comment-preserving
+pretty-printer smarter than (ice-9 pretty-print).
+
+*** New ‘channel-build-system’
+
+This build system lets you build Guix instances from channel specifications,
+similar to how 'guix time-machine' would do it, as regular packages.
+
 ** Noteworthy bug fixes
 *** Fall back to Software Heritage when cloning a channel
     (<https://issues.guix.gnu.org/44187>)
