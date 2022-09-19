@@ -618,8 +618,8 @@ fractional-second-digits-append-item.js")
 ;; XXXX: Workaround 'snippet' limitations.
 (define computed-origin-method (@@ (guix packages) computed-origin-method))
 
-(define %icecat-version "102.2.0-guix0-preview1")
-(define %icecat-build-id "20220824000000") ;must be of the form YYYYMMDDhhmmss
+(define %icecat-version "102.3.0-guix0-preview1")
+(define %icecat-build-id "20220920000000") ;must be of the form YYYYMMDDhhmmss
 
 ;; 'icecat-source' is a "computed" origin that generates an IceCat tarball
 ;; from the corresponding upstream Firefox ESR tarball, using the 'makeicecat'
@@ -641,11 +641,11 @@ fractional-second-digits-append-item.js")
                   "firefox-" upstream-firefox-version ".source.tar.xz"))
             (sha256
              (base32
-              "1zwpgis7py1bf8p88pz3mpai6a02qrdb8ww2fa9kxxdl9b8r2k81"))))
+              "0nmm861p4zakdvi9lj0ac8dkf9v17250rzcmrx1f6r7rvjv273ih"))))
 
-         (upstream-icecat-base-version "102.2.0") ; maybe older than base-version
+         (upstream-icecat-base-version "102.3.0") ; maybe older than base-version
          ;;(gnuzilla-commit (string-append "v" upstream-icecat-base-version))
-         (gnuzilla-commit "448beb77c653eb3b7b7649d8bcd8a1704c3144c6")
+         (gnuzilla-commit "f82b5b40943fe7723486fadccb48d454ee3e9dad")
          (gnuzilla-source
           (origin
             (method git-fetch)
@@ -657,7 +657,7 @@ fractional-second-digits-append-item.js")
                                       (string-take gnuzilla-commit 8)))
             (sha256
              (base32
-              "1y3k1z2vals7lnsnghzqli4r6rabdzz20vl74n99lb18ri209iya"))))
+              "1d7lfvwi9mvaxcfiqcgch3idhyxpdf56r9b71r54yiifv6xlr7x9"))))
 
          ;; 'search-patch' returns either a valid file name or #f, so wrap it
          ;; in 'assume-valid-file-name' to avoid 'local-file' warnings.
